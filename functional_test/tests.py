@@ -16,11 +16,12 @@ class VisitorLoginTest(LiveServerTestCase):
     def tearDown(self):
         self.browser.quit()
 
-    def test_user_can_login_and_have_access_only_to_his_stations(self):
+    def test_hydrological_observer_can_login_and_have_access_only_to_his_stations(self):
         #Hydrologist enter to hydrological web-site
         self.browser.get(self.live_server_url)
         #Hydrologist should be sure that he visits hydrological web-site
-        self.assertEqual('Гидрологические наблюдения', self.browser.title)
+        self.assertEqual('Департамент гидрологии', self.browser.title)
+        self.assertRegex(self.browser.current_url, '/login')
         time.sleep(3)
         #Hydrologist enter wrong password
         username = self.browser.find_element_by_name('username')
@@ -31,10 +32,10 @@ class VisitorLoginTest(LiveServerTestCase):
         loginButton = self.browser.find_element_by_name('login')
         loginButton.click()
         #Browser stays on home page with login form
-        self.assertEqual(self.browser.current_url, '/')
+        self.assertRegex(self.browser.current_url, '/login')
         #Page contains error message
-        errorParagraph = self.browser.find_element_by_tag_name('p')
-        self.assertIn('Неправильный логин или пароль', errorParagraph)
+        errorMessage = self.browser.find_element_by_class_name('alert')
+        self.assertEqual('Неправильный логин или пароль', errorMessage.text)
         #Hydrologist enter correct password
         username = self.browser.find_element_by_name('username')
         password = self.browser.find_element_by_name('password')
@@ -45,5 +46,5 @@ class VisitorLoginTest(LiveServerTestCase):
         loginButton.click()
         #Hydrologist figure out that he succesfully logged in
         #His link has been changed
-        self.assertEqual(self.browser.current_url, '/index')
+        self.assertEqual(self.browser.current_url, '/')
         self.fail('Finish Test')
