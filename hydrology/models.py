@@ -13,7 +13,7 @@ class Region(models.Model):
     name = models.CharField(max_length = 255)
 
     def __str__(self):
-        self.name
+        return self.name
     class Meta:
         db_table = 'regions'
 
@@ -26,7 +26,7 @@ class Hydropost(models.Model):
     region = models.ForeignKey(Region, on_delete = models.DO_NOTHING)
 
     def __str__(self):
-        self.name
+        return self.name
     class Meta:
         db_table = 'hydroposts'
 

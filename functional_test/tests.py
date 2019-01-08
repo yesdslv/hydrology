@@ -8,6 +8,8 @@ import unittest
 
 import time
 
+from hydrology.models import Hydropost
+
 class VisitorLoginTest(LiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
@@ -51,4 +53,18 @@ class VisitorLoginTest(LiveServerTestCase):
         #Hydrologist figure out that he succesfully logged in
         #His link has been changed
         self.assertRegex(self.browser.current_url, '/')
+        #Hydrologist see his user name
+        username = self.browser.find_element_by_name('username')
+        self.assertEqual('Didar', username.text)
+        #Hydrologists should see his own list of stations 
+        ##We query for hydroposts in Akmola, cause Didar is observing
+        ##Akmola regions hydroposts
+        hydroposts = Hydropost.objects.filter(region = 'KZ-AKM')
+        select_option = self.browser.find_element_by_id('hydroposts')
+        hydroposts_in_browser = select_option.find_elements_by_tag_name('option')
+        self.assertEqual(hydroposts, hydroposts_in_browser)
+        #Hydrologist press OK button
+        ok_button = self.browser.find_element_by_id('ok')
+        time.sleep(3)
+        ok_button.click()
         self.fail('Finish Test')
