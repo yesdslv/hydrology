@@ -45,7 +45,7 @@ class Discharge(models.Model):
 
     class Meta:
         db_table = 'discharge'
-        unique_together = (('hydropost', 'observationdate'),)
+        unique_together = (('hydropost', 'observationDate'),)
 
 
 class Level(models.Model):
@@ -56,7 +56,7 @@ class Level(models.Model):
 
     class Meta:
         db_table = 'level'
-        unique_together = (('hydropost', 'observationdate'),)
+        unique_together = (('hydropost', 'observationDate'),)
 
 
 

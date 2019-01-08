@@ -4,6 +4,7 @@ from django.http import HttpRequest
 from django.template.loader import render_to_string
 from django.contrib.auth.views import LoginView
 
+
 from .views import home
 
 class LoginPageTest(TestCase):

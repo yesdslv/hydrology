@@ -3,17 +3,6 @@
 {% block content %}
 
 <body>
-   
-
-    {% if next %}
-    {% if user.is_authenticated %}
-    <p>Your account doesn't have access to this page. To proceed,
-        please login with an account that has access.</p>
-    {% else %}
-    <p>Please login to see this page.</p>
-    {% endif %}
-    {% endif %}
-
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         <table>
@@ -27,7 +16,7 @@
             </tr>
         </table>
         <input type="submit" name = "login" value="login" />
-        <input type="hidden" name="next" value="{{ next }}" />
+        <input type="hidden" name="next" value="{% url 'home' %}" />
     </form> 
      {% if form.errors %}
     <div class="alert alert-danger" role="alert">
