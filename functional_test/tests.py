@@ -50,5 +50,5 @@ class VisitorLoginTest(LiveServerTestCase):
         loginButton.click()
         #Hydrologist figure out that he succesfully logged in
         #His link has been changed
-        self.assertEqual(self.browser.current_url, '/')
+        self.assertRegex(self.browser.current_url, '/')
         self.fail('Finish Test')
