@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
 
 import unittest
 
@@ -19,12 +20,15 @@ class VisitorLoginTest(LiveServerTestCase):
         ##Create user Didar and make him hydrologist
         new_user = User.objects.create_user(username = 'Didar', password = 'password')
         new_hydrologist = Hydrologist.objects.create(user = new_user)  
-        #Р. Силеты – Новомарковка
+        ##Р. Силеты – Новомарковка
+        ##Тип ГП-1
         firstHydropost = Hydropost.objects.get(code = 11242)
-        #Р.Есиль – с. Державинск
-        secondHydropost = Hydropost.objects.get(code = 11402)
-        #р. Нура - с.Коргалжын
-        thirdHydropost = Hydropost.objects.get(code = 13077)
+        ##р. Есиль - г.Астана
+        ##Тип ГП-2
+        secondHydropost = Hydropost.objects.get(code = 11398)
+        ##Оз. Копа – г. Кокшетау
+        ##ОГП-2
+        thirdHydropost = Hydropost.objects.get(code = 11919)
         ##Didar will enter data for these hydroposts
         Observation.objects.create(hydropost = firstHydropost,
                             hydrologist = new_hydrologist)
@@ -43,7 +47,7 @@ class VisitorLoginTest(LiveServerTestCase):
         self.assertIn(rowText, [row.text for row in rows])
 
 
-    def test_hydrological_observer_can_login_and_have_access_only_to_his_stations(self):
+    def test_hydrologist_can_login_have_access_only_to_his_stations_and_submit_data(self):
         #Hydrologist enter to hydrological web-site
         self.browser.get(self.live_server_url)
         #Hydrologist should be sure that he visits hydrological web-site
@@ -54,9 +58,9 @@ class VisitorLoginTest(LiveServerTestCase):
         password = self.browser.find_element_by_name('password')
         username.send_keys('Didar')
         password.send_keys('123456')
-        time.sleep(3)
+        time.sleep(1)
         loginButton = self.browser.find_element_by_name('login')
-        time.sleep(3)
+        time.sleep(1)
         loginButton.click()
         #Browser stays on home page with login form
         self.assertRegex(self.browser.current_url, '/login')
@@ -68,27 +72,35 @@ class VisitorLoginTest(LiveServerTestCase):
         password = self.browser.find_element_by_name('password')
         username.clear()
         password.clear()
-        time.sleep(3)
+        time.sleep(1)
         username.send_keys('Didar')
         password.send_keys('password')
-        time.sleep(3)
+        time.sleep(1)
         loginButton = self.browser.find_element_by_name('login')
-        time.sleep(3)
+        time.sleep(1)
         loginButton.click()
         #Hydrologist figure out that he succesfully logged in
         #His link has been changed
-        time.sleep(3)
+        time.sleep(1)
         self.assertRegex(self.browser.current_url, '/')
         #Hydrologist see his user name
         username = self.browser.find_element_by_tag_name('h1')
-        time.sleep(3)
+        time.sleep(1)
         self.assertEqual('Didar', username.text)
         #Hydrologists should see his own list of stations 
-        ##We query only posts,that observed by Didar
+        ##We check posts,that observed by Didar
         self.checkForRowInListTable('Р. Силеты – Новомарковка')
-        self.checkForRowInListTable('Р.Есиль – с. Державинск')
-        self.checkForRowInListTable('р. Нура - с.Коргалжын')
+        self.checkForRowInListTable('р. Есиль - г.Астана')
+        self.checkForRowInListTable('Оз. Копа – г. Кокшетау')
+        #Hydrologist select one hydropost
+        select = Select(self.browser.find_element_by_name('hydroposts'))
+        select.select_by_visible_text('Р. Силеты – Новомарковка')
         button = self.browser.find_element_by_name('asput')
         #Hydrologist press OK button
         button.click()
+        #Hydrologist should see that he is redirected to page for data submitting
+        self.assertRegex(self.browser.current_url, '/data')
+        #Hydrologist should see hydropost name in header
+        hydropostName = self.browser.find_element_by_tag_name('h1')
+        self.assertEqual('Р. Силеты – Новомарковка', hydropostName.text)
         self.fail('Finish Test')
