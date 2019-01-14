@@ -16,6 +16,15 @@ class Region(models.Model):
     class Meta:
         db_table = 'regions'
 
+class HydropostCategory(models.Model):
+    code = models.CharField(primary_key=True, max_length=15)
+    name = models.CharField(max_length=255)
+        
+    def __str__(self):
+        return self.name
+    class Meta:
+        db_table = 'hydropost_categories'
+
 class Hydropost(models.Model):
     code = models.IntegerField(primary_key = True)
     nameEn = models.CharField(max_length = 255)
@@ -23,6 +32,7 @@ class Hydropost(models.Model):
     lat = models.DecimalField(max_digits = 5, decimal_places=2)
     lon = models.DecimalField(max_digits = 5, decimal_places=2)
     region = models.ForeignKey(Region, on_delete = models.DO_NOTHING)
+    category = models.ForeignKey(HydropostCategory, on_delete = models.DO_NOTHING)
     hydrologists = models.ManyToManyField(
                     Hydrologist,
                     through = 'Observation',
