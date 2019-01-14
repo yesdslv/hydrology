@@ -1,22 +1,47 @@
 from django.test import LiveServerTestCase
+from django.contrib.auth.models import User
 
 from selenium import webdriver
-
 from selenium.webdriver.common.keys import Keys
 
 import unittest
 
 import time
 
-from hydrology.models import Hydropost
+from hydrology.models import Hydropost, Hydrologist, Observation
 
 class VisitorLoginTest(LiveServerTestCase):
+    fixtures = ['hydrology/fixtures/fixtures.json']
+
     def setUp(self):
         self.browser = webdriver.Firefox()
         self.browser.implicitly_wait(3)
+        ##Create user Didar and make him hydrologist
+        new_user = User.objects.create_user(username = 'Didar', password = 'password')
+        new_hydrologist = Hydrologist.objects.create(user = new_user)  
+        #Р. Силеты – Новомарковка
+        firstHydropost = Hydropost.objects.get(code = 11242)
+        #Р.Есиль – с. Державинск
+        secondHydropost = Hydropost.objects.get(code = 11402)
+        #р. Нура - с.Коргалжын
+        thirdHydropost = Hydropost.objects.get(code = 13077)
+        ##Didar will enter data for these hydroposts
+        Observation.objects.create(hydropost = firstHydropost,
+                            hydrologist = new_hydrologist)
+        Observation.objects.create(hydropost = secondHydropost,
+                            hydrologist = new_hydrologist)
+        Observation.objects.create(hydropost = thirdHydropost,
+                            hydrologist = new_hydrologist)
+        
 
     def tearDown(self):
         self.browser.quit()
+
+    def checkForRowInListTable(self, rowText):
+        table = self.browser.find_element_by_name('hydroposts')
+        rows = table.find_elements_by_tag_name('option')
+        self.assertIn(rowText, [row.text for row in rows])
+
 
     def test_hydrological_observer_can_login_and_have_access_only_to_his_stations(self):
         #Hydrologist enter to hydrological web-site
@@ -45,26 +70,25 @@ class VisitorLoginTest(LiveServerTestCase):
         password.clear()
         time.sleep(3)
         username.send_keys('Didar')
-        password.send_keys('fjytgh567')
+        password.send_keys('password')
         time.sleep(3)
         loginButton = self.browser.find_element_by_name('login')
         time.sleep(3)
         loginButton.click()
         #Hydrologist figure out that he succesfully logged in
         #His link has been changed
+        time.sleep(3)
         self.assertRegex(self.browser.current_url, '/')
         #Hydrologist see his user name
-        username = self.browser.find_element_by_name('username')
+        username = self.browser.find_element_by_tag_name('h1')
+        time.sleep(3)
         self.assertEqual('Didar', username.text)
         #Hydrologists should see his own list of stations 
-        ##We query for hydroposts in Akmola, cause Didar is observing
-        ##Akmola regions hydroposts
-        hydroposts = Hydropost.objects.filter(region = 'KZ-AKM')
-        select_option = self.browser.find_element_by_id('hydroposts')
-        hydroposts_in_browser = select_option.find_elements_by_tag_name('option')
-        self.assertEqual(hydroposts, hydroposts_in_browser)
+        ##We query only posts,that observed by Didar
+        self.checkForRowInListTable('Р. Силеты – Новомарковка')
+        self.checkForRowInListTable('Р.Есиль – с. Державинск')
+        self.checkForRowInListTable('р. Нура - с.Коргалжын')
+        button = self.browser.find_element_by_name('asput')
         #Hydrologist press OK button
-        ok_button = self.browser.find_element_by_id('ok')
-        time.sleep(3)
-        ok_button.click()
+        button.click()
         self.fail('Finish Test')

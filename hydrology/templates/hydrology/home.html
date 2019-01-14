@@ -1,13 +1,16 @@
 {% extends "hydrology/base_generic.html" %}
 
 {% block content %}
-  <h1>Total number of hydroposts</h1>
-  <p>Welcome to Hydrological department</em>!</p>
-  <h2>Dynamic content</h2>
-  <p>The number of content in database:</p>
-  <ul>
-    <li><strong>Regions:</strong> {{ nRegions }}</li>
-    <li><strong>Hydroposts:</strong> {{ nPosts }}</li>
-  </ul>
-  <p>You have visited this page {{ nVisits }}{% if nVisits == 1 %} time{% else %} times{% endif %}.</p>
+<h1>{{user.get_username }}</h1>
+<p>Welcome to Hydrological department</p>
+<h2>Dynamic content</h2>
+<form action = "" method = "post">
+    {% csrf_token %}
+    <select name="hydroposts">
+        {% for hydropost in hydroposts %}
+        <option value="{{ hydropost.nameEn }}">{{ hydropost.name }}</option>
+        {% endfor %}
+        <input name="asput" type = "submit" value = "Submit" />
+    </select>
+</form>
 {% endblock %}
