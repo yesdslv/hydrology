@@ -2,11 +2,9 @@
 
 {% block content %}
 <h1>{{user.get_username }}</h1>
-<p>Welcome to Hydrological department</p>
-<h2>Dynamic content</h2>
-<form action = "" method = "post">
+<form action = "{% url 'record' %}" method = "post">
     {% csrf_token %}
-    <select name="hydroposts">
+    <select name="hydropost">
         {% for hydropost in hydroposts %}
         <option value="{{ hydropost.nameEn }}">{{ hydropost.name }}</option>
         {% endfor %}

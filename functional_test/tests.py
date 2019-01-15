@@ -42,7 +42,7 @@ class VisitorLoginTest(LiveServerTestCase):
         self.browser.quit()
 
     def checkForRowInListTable(self, rowText):
-        table = self.browser.find_element_by_name('hydroposts')
+        table = self.browser.find_element_by_name('hydropost')
         rows = table.find_elements_by_tag_name('option')
         self.assertIn(rowText, [row.text for row in rows])
 
@@ -93,14 +93,18 @@ class VisitorLoginTest(LiveServerTestCase):
         self.checkForRowInListTable('р. Есиль - г.Астана')
         self.checkForRowInListTable('Оз. Копа – г. Кокшетау')
         #Hydrologist select one hydropost
-        select = Select(self.browser.find_element_by_name('hydroposts'))
+        select = Select(self.browser.find_element_by_name('hydropost'))
         select.select_by_visible_text('Р. Силеты – Новомарковка')
         button = self.browser.find_element_by_name('asput')
         #Hydrologist press OK button
         button.click()
         #Hydrologist should see that he is redirected to page for data submitting
-        self.assertRegex(self.browser.current_url, '/data')
+        self.assertRegex(self.browser.current_url, '/record')
         #Hydrologist should see hydropost name in header
-        hydropostName = self.browser.find_element_by_tag_name('h1')
-        self.assertEqual('Р. Силеты – Новомарковка', hydropostName.text)
+        time.sleep(1)
+        hydropost_name_header = self.browser.find_element_by_tag_name('h1')
+        post_category_header = self.browser.find_element_by_tag_name('h2')
+        self.assertEqual('Р. Силеты – Новомарковка', hydropost_name_header.text)
+        self.assertEqual('Речной пост 1 разряд', post_category_header.text)
+        
         self.fail('Finish Test')

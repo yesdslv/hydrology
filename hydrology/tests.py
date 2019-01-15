@@ -4,7 +4,7 @@ from django.urls import resolve, reverse
 from django.http import HttpRequest
 from django.contrib.auth.models import User
 
-from .views import home
+from .views import home, record 
 
 from .models import Hydropost, Hydrologist, Region, Observation
 
@@ -56,3 +56,25 @@ class HydropostListModelTest(LoggedInTestCase):
         hydrologist_hydroposts = hydrologist.hydropost_set.all().values_list('name' , flat = True)
         his_hydroposts = ['Р. Силеты – Новомарковка', 'Р.Есиль – с. Державинск']        
         self.assertListEqual(list(hydrologist_hydroposts), list(his_hydroposts))
+
+class RecordPageTest(LoggedInTestCase):
+
+    def test_record_url_resolves_as_data_view(self):
+        found = resolve('/record/')
+        self.assertEqual(found.func, record)
+
+    def test_view_uses_correct_template(self):
+        hydropost = Hydropost.objects.get(code = 11242)
+        response = self.client.post(
+            '/record/',
+            data = { 'hydropost' : hydropost.nameEn ,}
+        )
+        self.assertTemplateUsed(response, 'hydrology/record.html')
+
+    def test_request_post_correct_info(self):
+        hydropost = Hydropost.objects.get(code = 11402)
+        response = self.client.post(
+            '/record/',
+            data = { 'hydropost' : hydropost.nameEn ,}
+        )
+        self.assertEquals(response.status_code, 200)
