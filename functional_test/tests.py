@@ -106,5 +106,11 @@ class VisitorLoginTest(LiveServerTestCase):
         post_category_header = self.browser.find_element_by_tag_name('h2')
         self.assertEqual('Р. Силеты – Новомарковка', hydropost_name_header.text)
         self.assertEqual('Речной пост 1 разряд', post_category_header.text)
-        
+        #Hydrologist should see forms supplied for this hydropost category
+        level_input = self.browser.find_element_by_tag_name('level')
+        discharge_input = self.browser.find_element_by_tag_name('discharge')
+        water_temperature_input = self.browser.find_element_by_name('waterTemperature')
+        air_temperature_input = self.browser.find_element_by_name('airTemperature')
+
+
         self.fail('Finish Test')
