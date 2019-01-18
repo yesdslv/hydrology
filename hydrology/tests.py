@@ -3,10 +3,13 @@ from django.test import Client
 from django.urls import resolve, reverse
 from django.http import HttpRequest
 from django.contrib.auth.models import User
+from django.utils.encoding import force_text
 
 from .views import home, record 
 
 from .models import Hydropost, Hydrologist, Region, Observation
+
+from .forms import GP1Form, OGP2Form
 
 class LoginPageTest(TestCase):
    
@@ -26,14 +29,24 @@ class LoggedInTestCase(TestCase):
         self.client.login(username='username', password='password')
         new_hydrologist = Hydrologist.objects.create(user = new_user)  
         #Р. Силеты – Новомарковка
+        #nameEn r. Silety - Novomarkovka
+        #ГП-1
         firstHydropost = Hydropost.objects.get(code = 11242)
         #Р.Есиль – с. Державинск
+        #nameEn r. Esil - s. Derzhavinsk
+        #ГП-1
         secondHydropost = Hydropost.objects.get(code = 11402)
+        #Оз. Копа – г. Кокшетау
+        #Oz. Kopa - g. Kokshetau
+        #ОГП-2
+        thirdHydropost = Hydropost.objects.get(code = 11919)        
         Observation.objects.create(hydropost = firstHydropost,
                 hydrologist = new_hydrologist)
         Observation.objects.create(hydropost = secondHydropost,
                 hydrologist = new_hydrologist)
-
+        Observation.objects.create(hydropost = thirdHydropost,
+                hydrologist = new_hydrologist)
+        
 
 class HomePageTest(LoggedInTestCase):
 
@@ -42,11 +55,17 @@ class HomePageTest(LoggedInTestCase):
         self.assertEqual(found.func, home)
 
     def test_view_uses_correct_template(self):
-        response = self.client.get(reverse('home'))
+        response = self.client.post(reverse('home'))
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'hydrology/home.html')
 
-
+    def test_view_return_correct_json_response(self):
+        response = self.client.get(reverse('home'), { 'hydropost' : 'r. Esil - s. Derzhavinsk' })
+        self.assertJSONEqual(force_text(response.content), { 'success': 'Речной пост 1 разряд' })
+    
+    def test_view_return_error_json_response_for_non_existing_hydropost(self):
+        response = self.client.get(reverse('home'), { 'hydropost' : 'Non-existing hydropost' })
+        self.assertJSONEqual(force_text(response.content), { 'error' : 'Нет такой станции' })
 
 class HydropostListModelTest(LoggedInTestCase):
 
@@ -54,7 +73,8 @@ class HydropostListModelTest(LoggedInTestCase):
         user = User.objects.get(username = 'username') 
         hydrologist = Hydrologist.objects.get(user = user)
         hydrologist_hydroposts = hydrologist.hydropost_set.all().values_list('name' , flat = True)
-        his_hydroposts = ['Р. Силеты – Новомарковка', 'Р.Есиль – с. Державинск']        
+        his_hydroposts = ['Р. Силеты – Новомарковка', 
+                'Р.Есиль – с. Державинск', 'Оз. Копа – г. Кокшетау']        
         self.assertListEqual(list(hydrologist_hydroposts), list(his_hydroposts))
 
 class RecordPageTest(LoggedInTestCase):
@@ -78,3 +98,40 @@ class RecordPageTest(LoggedInTestCase):
             data = { 'hydropost' : hydropost.nameEn ,}
         )
         self.assertEquals(response.status_code, 200)
+
+    def test_record_page_uses_proper_form_for_GP1(self):
+        hydropost = Hydropost.objects.get(code = 11402)
+        response = self.client.post(
+            '/record/',
+            data = { 'hydropost' : hydropost.nameEn ,}
+        )
+        self.assertIsInstance(response.context['form'], GP1Form)
+
+    #def test_record_page_uses_proper_form_for_OGP2(self):
+    #    hydropost = Hydropost.objects.get(code = 11919)
+    #    response = self.client.post(
+    #        '/record/',
+    #        data = { 'hydropost' : hydropost.nameEn ,}
+    #    )
+    #    self.assertIsInstance(response.context['form'], OGP2Form)
+
+class ObservationFormTest(TestCase):
+
+    ##Form for Речной пост 1 разряд
+    def test_GP1_form_contains_all_observation_for_his_types(self):
+       form = GP1Form()
+       self.assertIn('name="level"', form.as_p())
+       self.assertIn('name="discharge"', form.as_p())
+       self.assertIn('name="air_temperature"', form.as_p())
+       self.assertIn('name="water_temperature"', form.as_p())
+
+    def test_OGP2_form_contains_all_observation_for_his_type(self):
+       form = OGP2Form()
+       self.assertIn('name="air_temperature"', form.as_p())
+       self.assertIn('name="water_temperature"', form.as_p())
+       self.assertIn('name="ripple"', form.as_p())
+       self.assertIn('name="level"', form.as_p())
+
+#class HydropostTypePageTest(TestCase):
+
+
