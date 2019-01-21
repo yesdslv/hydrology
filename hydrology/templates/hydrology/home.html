@@ -2,6 +2,7 @@
 
 {% block content %}
 <h1>{{user.get_username }}</h1>
+<h2>Hydropost category</h2>
 <form action = "{% url 'record' %}" method = "post">
     {% csrf_token %}
     <select name="hydropost">
@@ -11,4 +12,6 @@
         <input name="asput" type = "submit" value = "Submit" />
     </select>
 </form>
+{% load static %}
+<script src="{% static "hydrology/hydrology.js" %}"></script>
 {% endblock %}

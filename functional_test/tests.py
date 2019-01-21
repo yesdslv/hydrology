@@ -46,6 +46,19 @@ class VisitorLoginTest(LiveServerTestCase):
         rows = table.find_elements_by_tag_name('option')
         self.assertIn(rowText, [row.text for row in rows])
 
+    def selectHydropost(self, hydropost_name):
+        #Hydrologist select one hydropost
+        select = Select(self.browser.find_element_by_name('hydropost'))
+        select.select_by_visible_text(hydropost_name)
+        button = self.browser.find_element_by_name('asput')
+        #Hydrologist should see hydropost category in header h2
+        ##That one is for testing get request 
+        ##We get hydropost category
+        hydropost_category_header = self.browser.find_element_by_tag_name('h2')
+        self.assertEqual('Речной пост 1 разряд', hydropost_category_header.text)
+        #Hydrologist press OK button
+        button.click()
+
 
     def test_hydrologist_can_login_have_access_only_to_his_stations_and_submit_data(self):
         #Hydrologist enter to hydrological web-site
@@ -85,32 +98,44 @@ class VisitorLoginTest(LiveServerTestCase):
         self.assertRegex(self.browser.current_url, '/')
         #Hydrologist see his user name
         username = self.browser.find_element_by_tag_name('h1')
-        time.sleep(1)
+        time.sleep(2)
         self.assertEqual('Didar', username.text)
         #Hydrologists should see his own list of stations 
         ##We check posts,that observed by Didar
         self.checkForRowInListTable('Р. Силеты – Новомарковка')
         self.checkForRowInListTable('р. Есиль - г.Астана')
         self.checkForRowInListTable('Оз. Копа – г. Кокшетау')
-        #Hydrologist select one hydropost
-        select = Select(self.browser.find_element_by_name('hydropost'))
-        select.select_by_visible_text('Р. Силеты – Новомарковка')
-        button = self.browser.find_element_by_name('asput')
-        #Hydrologist press OK button
-        button.click()
+        #Hydrologist choose one hydropost
+        self.selectHydropost('Р. Силеты – Новомарковка')
         #Hydrologist should see that he is redirected to page for data submitting
         self.assertRegex(self.browser.current_url, '/record')
         #Hydrologist should see hydropost name in header
-        time.sleep(1)
+        time.sleep(5)
         hydropost_name_header = self.browser.find_element_by_tag_name('h1')
         post_category_header = self.browser.find_element_by_tag_name('h2')
         self.assertEqual('Р. Силеты – Новомарковка', hydropost_name_header.text)
         self.assertEqual('Речной пост 1 разряд', post_category_header.text)
         #Hydrologist should see forms supplied for this hydropost category
-        level_input = self.browser.find_element_by_tag_name('level')
-        discharge_input = self.browser.find_element_by_tag_name('discharge')
-        water_temperature_input = self.browser.find_element_by_name('waterTemperature')
-        air_temperature_input = self.browser.find_element_by_name('airTemperature')
-
-
+        level_input = self.browser.find_element_by_name('level')
+        discharge_input = self.browser.find_element_by_name('discharge')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature')
+        time.sleep(8)
+        #Hydrologist press back button
+        self.browser.back()
+        time.sleep(5)
+        #Hydrologist select another hydropost
+        self.selectHydropost('Оз. Копа – г. Кокшетау')
+        #Hydrologist should see hydropost name in header
+        time.sleep(5)
+        hydropost_name_header = self.browser.find_element_by_tag_name('h1')
+        post_category_header = self.browser.find_element_by_tag_name('h2')
+        self.assertEqual('Оз. Копа – г. Кокшетау', hydropost_name_header.text)
+        self.assertEqual('Озерный пост 2 разряд', post_category_header.text)
+        #Hydrologist should see forms supplied for this hydropost category
+        level_input = self.browser.find_element_by_name('level')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature')
+        ripple_input = self.browser.find_element_by_name('ripple')         
+        time.sleep(3)
         self.fail('Finish Test')

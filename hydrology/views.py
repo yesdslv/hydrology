@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.http import JsonResponse
 
 from .models import Hydrologist, Hydropost
 from .forms import GP1Form, OGP2Form
@@ -27,11 +28,12 @@ def record(request):
                 'form': form, }
     return render(request, 'hydrology/record.html', context)
 
-#@login_required(login_url = '/login/')
-#def search_hydropost_type(request):
-#    if request.method == 'GET':
-#        if 'hydropost' in request.GET.keys():
-#                message = 'You submitted: %r' % request.GET['q']
-#            else:
-#                message = 'You submitted nothing!'
-#    return HttpResponse(message)
+@login_required(login_url = '/login/')
+def search_hydropost_type(request):
+    if request.method == 'GET':
+        try:
+            hydropost = Hydropost.objects.get(nameEn = request.GET.get('hydropost', False))
+            data = { 'success': str(hydropost.category), }
+        except Hydropost.DoesNotExist:
+            data = { 'error' : 'Нет такой станции', }
+        return JsonResponse(data)

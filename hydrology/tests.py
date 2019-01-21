@@ -5,7 +5,7 @@ from django.http import HttpRequest
 from django.contrib.auth.models import User
 from django.utils.encoding import force_text
 
-from .views import home, record 
+from .views import home, record, search_hydropost_type 
 
 from .models import Hydropost, Hydrologist, Region, Observation
 
@@ -47,7 +47,6 @@ class LoggedInTestCase(TestCase):
         Observation.objects.create(hydropost = thirdHydropost,
                 hydrologist = new_hydrologist)
         
-
 class HomePageTest(LoggedInTestCase):
 
     def test_root_url_resolves_as_home_view(self):
@@ -59,13 +58,9 @@ class HomePageTest(LoggedInTestCase):
         self.assertEquals(response.status_code, 200)
         self.assertTemplateUsed(response, 'hydrology/home.html')
 
-    def test_view_return_correct_json_response(self):
-        response = self.client.get(reverse('home'), { 'hydropost' : 'r. Esil - s. Derzhavinsk' })
-        self.assertJSONEqual(force_text(response.content), { 'success': 'Речной пост 1 разряд' })
-    
-    def test_view_return_error_json_response_for_non_existing_hydropost(self):
-        response = self.client.get(reverse('home'), { 'hydropost' : 'Non-existing hydropost' })
-        self.assertJSONEqual(force_text(response.content), { 'error' : 'Нет такой станции' })
+    def test_static_javascript_included(self):
+        response = self.client.post(reverse('home'))
+        self.assertContains(response, 'hydrology/hydrology.js')
 
 class HydropostListModelTest(LoggedInTestCase):
 
@@ -115,7 +110,7 @@ class RecordPageTest(LoggedInTestCase):
     #    )
     #    self.assertIsInstance(response.context['form'], OGP2Form)
 
-class ObservationFormTest(TestCase):
+class ObservationFormTest(LoggedInTestCase):
 
     ##Form for Речной пост 1 разряд
     def test_GP1_form_contains_all_observation_for_his_types(self):
@@ -132,6 +127,16 @@ class ObservationFormTest(TestCase):
        self.assertIn('name="ripple"', form.as_p())
        self.assertIn('name="level"', form.as_p())
 
-#class HydropostTypePageTest(TestCase):
-
-
+class HydropostCategorySearchPageTest(LoggedInTestCase):
+    
+    def test_record_url_resolves_as_data_view(self):
+        found = resolve('/category/')
+        self.assertEqual(found.func, search_hydropost_type)
+    
+    def test_view_return_correct_json_response(self):
+        response = self.client.get(reverse('category'), { 'hydropost' : 'r. Esil - s. Derzhavinsk' })
+        self.assertJSONEqual(force_text(response.content), { 'success': 'Речной пост 1 разряд' })
+    
+    def test_view_return_error_json_response_for_non_existing_hydropost(self):
+        response = self.client.get(reverse('category'), { 'hydropost' : 'Non-existing hydropost' })
+        self.assertJSONEqual(force_text(response.content), { 'error' : 'Нет такой станции' })
