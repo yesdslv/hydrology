@@ -1,4 +1,4 @@
-from django.test import LiveServerTestCase
+from django.contrib.staticfiles.testing import StaticLiveServerTestCase 
 from django.contrib.auth.models import User
 
 from selenium import webdriver
@@ -11,7 +11,7 @@ import time
 
 from hydrology.models import Hydropost, Hydrologist, Observation
 
-class VisitorLoginTest(LiveServerTestCase):
+class VisitorLoginTest(StaticLiveServerTestCase):
     fixtures = ['hydrology/fixtures/fixtures.json']
 
     def setUp(self):
@@ -46,18 +46,17 @@ class VisitorLoginTest(LiveServerTestCase):
         rows = table.find_elements_by_tag_name('option')
         self.assertIn(rowText, [row.text for row in rows])
 
-    def selectHydropost(self, hydropost_name):
+    def selectHydropost(self, hydropost_name, hydropost_category):
         #Hydrologist select one hydropost
         select = Select(self.browser.find_element_by_name('hydropost'))
+        #select.select_by_visible_text(hydropost_name)
         select.select_by_visible_text(hydropost_name)
-        button = self.browser.find_element_by_name('asput')
-        #Hydrologist should see hydropost category in header h2
+        #Hydrologist should see hydropost category in header h3
         ##That one is for testing get request 
         ##We get hydropost category
-        hydropost_category_header = self.browser.find_element_by_tag_name('h2')
-        self.assertEqual('Речной пост 1 разряд', hydropost_category_header.text)
-        #Hydrologist press OK button
-        button.click()
+        time.sleep(1)
+        hydropost_category_header = self.browser.find_element_by_tag_name('h3')
+        self.assertEqual(hydropost_category, hydropost_category_header.text)
 
 
     def test_hydrologist_can_login_have_access_only_to_his_stations_and_submit_data(self):
@@ -98,44 +97,38 @@ class VisitorLoginTest(LiveServerTestCase):
         self.assertRegex(self.browser.current_url, '/')
         #Hydrologist see his user name
         username = self.browser.find_element_by_tag_name('h1')
-        time.sleep(2)
+        time.sleep(1)
         self.assertEqual('Didar', username.text)
         #Hydrologists should see his own list of stations 
         ##We check posts,that observed by Didar
         self.checkForRowInListTable('Р. Силеты – Новомарковка')
         self.checkForRowInListTable('р. Есиль - г.Астана')
         self.checkForRowInListTable('Оз. Копа – г. Кокшетау')
+        #Hydrologist should see inital category
+        ##This made for testing view get category for first select option
+        ##On first page loading
+        hydropost_category_header = self.browser.find_element_by_tag_name('h3')
+        self.assertEqual('Речной пост 1 разряд', hydropost_category_header.text)
+        ##This test for AJAX GET request
+        ##On change of selection box we should get hydropost category
         #Hydrologist choose one hydropost
-        self.selectHydropost('Р. Силеты – Новомарковка')
-        #Hydrologist should see that he is redirected to page for data submitting
-        self.assertRegex(self.browser.current_url, '/record')
-        #Hydrologist should see hydropost name in header
-        time.sleep(5)
-        hydropost_name_header = self.browser.find_element_by_tag_name('h1')
-        post_category_header = self.browser.find_element_by_tag_name('h2')
-        self.assertEqual('Р. Силеты – Новомарковка', hydropost_name_header.text)
-        self.assertEqual('Речной пост 1 разряд', post_category_header.text)
-        #Hydrologist should see forms supplied for this hydropost category
-        level_input = self.browser.find_element_by_name('level')
-        discharge_input = self.browser.find_element_by_name('discharge')
-        water_temperature_input = self.browser.find_element_by_name('water_temperature')
-        air_temperature_input = self.browser.find_element_by_name('air_temperature')
-        time.sleep(8)
-        #Hydrologist press back button
-        self.browser.back()
-        time.sleep(5)
-        #Hydrologist select another hydropost
-        self.selectHydropost('Оз. Копа – г. Кокшетау')
-        #Hydrologist should see hydropost name in header
-        time.sleep(5)
-        hydropost_name_header = self.browser.find_element_by_tag_name('h1')
-        post_category_header = self.browser.find_element_by_tag_name('h2')
-        self.assertEqual('Оз. Копа – г. Кокшетау', hydropost_name_header.text)
-        self.assertEqual('Озерный пост 2 разряд', post_category_header.text)
-        #Hydrologist should see forms supplied for this hydropost category
+        self.selectHydropost('р. Есиль - г.Астана', 'Речной пост 2 разряд')
+        #Hydrologist should see that he stays one the same page
+        self.assertRegex(self.browser.current_url, '/')
+        #Hydrologist choose another hydropost
+        self.selectHydropost('Р. Силеты – Новомарковка', 'Речной пост 1 разряд')
+        #Hydrologist should verify that he stays on the same page 
+        self.assertRegex(self.browser.current_url, '/')
+        #Hydrologist decide to enter observation data
+        #he choose р. Есиль - г.Астана
+        self.selectHydropost('р. Есиль - г.Астана', 'Речной пост 2 разряд')
+        submit_button = self.browser.find_element_by_class_name('btn')
+        submit_button.click()
+        #He should see modal with input for р. Есиль - г.Астана, Речной пост 2 разряд
+        modal_title = self.browser.find_element_by_class_name('modal-title')
+        #self.assertEqual('р. Есиль - г.Астана', )
         level_input = self.browser.find_element_by_name('level')
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
-        air_temperature_input = self.browser.find_element_by_name('air_temperature')
-        ripple_input = self.browser.find_element_by_name('ripple')         
-        time.sleep(3)
+        air_temperature_input = self.browser.find_element_by_name('air_temperature') 
+        time.sleep(5)
         self.fail('Finish Test')
