@@ -26,9 +26,21 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         ##р. Есиль - г.Астана
         ##Тип ГП-2
         secondHydropost = Hydropost.objects.get(code = 11398)
+        ##Р. Урал – г. Уральск
+        ##Тип ГП-3
+        thirdHydropost = Hydropost.objects.get(code = 19071)
+        ##Вдхр. Буктырма– с. Аксуат
+        ##Тип ОГП-1
+        fourthHydropost = Hydropost.objects.get(code = 2300738)
         ##Оз. Копа – г. Кокшетау
-        ##ОГП-2
-        thirdHydropost = Hydropost.objects.get(code = 11919)
+        ##Тип ОГП-2
+        fifthHydropost = Hydropost.objects.get(code = 11919)
+        ##Каспийское море – Форт Шевченко        
+        ##Тип МГП-1
+        sixthHydropost = Hydropost.objects.get(code = 97060)
+        ##Каспийское море – п.Каламкас
+        ##Тип МГП-2
+        seventhHydropost = Hydropost.objects.get(code = 97057)
         ##Didar will enter data for these hydroposts
         Observation.objects.create(hydropost = firstHydropost,
                             hydrologist = new_hydrologist)
@@ -36,7 +48,14 @@ class VisitorLoginTest(StaticLiveServerTestCase):
                             hydrologist = new_hydrologist)
         Observation.objects.create(hydropost = thirdHydropost,
                             hydrologist = new_hydrologist)
-        
+        Observation.objects.create(hydropost = fourthHydropost,
+                            hydrologist = new_hydrologist)
+        Observation.objects.create(hydropost = fifthHydropost,
+                            hydrologist = new_hydrologist)
+        Observation.objects.create(hydropost = sixthHydropost,
+                            hydrologist = new_hydrologist)
+        Observation.objects.create(hydropost = seventhHydropost,
+                            hydrologist = new_hydrologist)
 
     def tearDown(self):
         self.browser.quit()
@@ -103,7 +122,11 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         ##We check posts,that observed by Didar
         self.checkForRowInListTable('Р. Силеты – Новомарковка')
         self.checkForRowInListTable('р. Есиль - г.Астана')
+        self.checkForRowInListTable('Р. Урал – г. Уральск')
         self.checkForRowInListTable('Оз. Копа – г. Кокшетау')
+        self.checkForRowInListTable('Вдхр. Буктырма– с. Аксуат')
+        self.checkForRowInListTable('Каспийское море – Форт Шевченко')
+        self.checkForRowInListTable('Каспийское море – п.Каламкас')
         #Hydrologist should see inital category
         ##This made for testing view get category for first select option
         ##On first page loading
@@ -115,20 +138,98 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         self.selectHydropost('р. Есиль - г.Астана', 'Речной пост 2 разряд')
         #Hydrologist should see that he stays one the same page
         self.assertRegex(self.browser.current_url, '/')
-        #Hydrologist choose another hydropost
+        #Hydrologist choose other hydroposts
         self.selectHydropost('Р. Силеты – Новомарковка', 'Речной пост 1 разряд')
+        self.selectHydropost('Р. Урал – г. Уральск', 'Речной пост 3 разряд')
+        self.selectHydropost('Оз. Копа – г. Кокшетау', 'Озерный пост 2 разряд')
+        self.selectHydropost('Вдхр. Буктырма– с. Аксуат', 'Озерный пост 1 разряд')
+        self.selectHydropost('Каспийское море – Форт Шевченко', 'Морской пост 1 разряд')
+        self.selectHydropost('Каспийское море – п.Каламкас', 'Морской пост 2 разряд')
         #Hydrologist should verify that he stays on the same page 
         self.assertRegex(self.browser.current_url, '/')
         #Hydrologist decide to enter observation data
-        #he choose р. Есиль - г.Астана
+        #he choose Р. Силеты – Новомарковка 
+        self.selectHydropost('Р. Силеты – Новомарковка', 'Речной пост 1 разряд')
+        submit_button = self.browser.find_element_by_class_name('btn')
+        submit_button.click()
+        #He should see modal with input for Р. Силеты – Новомарковка, Речной пост 1 разряд
+        modal_title = self.browser.find_element_by_class_name('modal-title')
+        #He should see input form for Речной пост 1 разряд category
+        level_input = self.browser.find_element_by_name('level')
+        discharge_input = self.browser.find_element_by_name('discharge')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature')
+        ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+        #He choose р. Есиль - г.Астана
         self.selectHydropost('р. Есиль - г.Астана', 'Речной пост 2 разряд')
         submit_button = self.browser.find_element_by_class_name('btn')
         submit_button.click()
         #He should see modal with input for р. Есиль - г.Астана, Речной пост 2 разряд
         modal_title = self.browser.find_element_by_class_name('modal-title')
-        #self.assertEqual('р. Есиль - г.Астана', )
+        #He should see input form for Речной пост 2 разряд category
         level_input = self.browser.find_element_by_name('level')
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
         air_temperature_input = self.browser.find_element_by_name('air_temperature') 
-        time.sleep(5)
+        ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+        #He choose Р. Урал – г. Уральск
+        self.selectHydropost('Р. Урал – г. Уральск', 'Речной пост 2 разряд')
+        submit_button = self.browser.find_element_by_class_name('btn')
+        submit_button.click()
+        #He should see modal with input for Р. Урал – г. Уральск, Речной пост 3 разряд
+        modal_title = self.browser.find_element_by_class_name('modal-title')
+        #He should see input form for Речной пост 3 разряд category
+        level_input = self.browser.find_element_by_name('level')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature') 
+        ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+        #He choose Вдхр. Буктырма– с. Аксуат
+        self.selectHydropost('Вдхр. Буктырма– с. Аксуат', 'Озерный пост 1 разряд')
+        submit_button = self.browser.find_element_by_class_name('btn')
+        submit_button.click()
+        #He should see modal with input for Вдхр. Буктырма– с. Аксуат, Озерный пост 1 разряд 
+        modal_title = self.browser.find_element_by_class_name('modal-title')
+        #He should see input form for Озерный пост 1 разряд category
+        level_input = self.browser.find_element_by_name('level')
+        ripple_input = self.browser.find_element_by_name('ripple')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature') 
+        ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+        #He choose Оз. Копа – г. Кокшетау
+        self.selectHydropost('Оз. Копа – г. Кокшетау', 'Озерный пост 2 разряд')
+        submit_button = self.browser.find_element_by_class_name('btn')
+        submit_button.click()
+        #He should see modal with input for Оз. Копа – г. Кокшетау, Озерный пост 2 разряд 
+        modal_title = self.browser.find_element_by_class_name('modal-title')
+        #He should see input form for Озерный пост 2 разряд category
+        level_input = self.browser.find_element_by_name('level')
+        ripple_input = self.browser.find_element_by_name('ripple')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature') 
+        ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+        #He choose Каспийское море – Форт Шевченко
+        self.selectHydropost('Каспийское море – Форт Шевченко', 'Морской пост 1 разряд')
+        submit_button = self.browser.find_element_by_class_name('btn')
+        submit_button.click()
+        #He should see modal with input for Каспийское море – Форт Шевченко, Морской пост 1 разряд
+        modal_title = self.browser.find_element_by_class_name('modal-title')
+        #He should see input form for Морской пост 1 разряд category
+        level_input = self.browser.find_element_by_name('level')
+        ripple_input = self.browser.find_element_by_name('ripple')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature') 
+        ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+        #He choose Каспийское море – п.Каламкас
+        self.selectHydropost('Каспийское море – п.Каламкас', 'Морской пост 2 разряд')
+        submit_button = self.browser.find_element_by_class_name('btn')
+        submit_button.click()
+        #He should see modal with input for Каспийское море – п.Каламкас, Морской пост 2 разряд
+        modal_title = self.browser.find_element_by_class_name('modal-title')
+        #He should see input form for Морской пост 2 разряд
+        level_input = self.browser.find_element_by_name('level')
+        ripple_input = self.browser.find_element_by_name('ripple')
+        water_temperature_input = self.browser.find_element_by_name('water_temperature')
+        air_temperature_input = self.browser.find_element_by_name('air_temperature') 
+        ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+
+        time.sleep(1)
         self.fail('Finish Test')
