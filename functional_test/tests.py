@@ -160,7 +160,12 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
         air_temperature_input = self.browser.find_element_by_name('air_temperature')
         ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
-        #He choose р. Есиль - г.Астана
+        time.sleep(2)
+        #He close modal
+        close_button = self.browser.find_element_by_class_name('close')
+        close_button.click()
+        time.sleep(2)
+        ##He choose р. Есиль - г.Астана
         self.selectHydropost('р. Есиль - г.Астана', 'Речной пост 2 разряд')
         submit_button = self.browser.find_element_by_class_name('btn')
         submit_button.click()
@@ -171,8 +176,13 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
         air_temperature_input = self.browser.find_element_by_name('air_temperature') 
         ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+        time.sleep(2)
+        #He close modal
+        close_button = self.browser.find_element_by_class_name('close')
+        close_button.click()
+        time.sleep(2)
         #He choose Р. Урал – г. Уральск
-        self.selectHydropost('Р. Урал – г. Уральск', 'Речной пост 2 разряд')
+        self.selectHydropost('Р. Урал – г. Уральск', 'Речной пост 3 разряд')
         submit_button = self.browser.find_element_by_class_name('btn')
         submit_button.click()
         #He should see modal with input for Р. Урал – г. Уральск, Речной пост 3 разряд
@@ -182,7 +192,12 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
         air_temperature_input = self.browser.find_element_by_name('air_temperature') 
         ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
-        #He choose Вдхр. Буктырма– с. Аксуат
+        time.sleep(2)
+        #He close modal
+        close_button = self.browser.find_element_by_class_name('close')
+        close_button.click()
+        time.sleep(2)
+        ##He choose Вдхр. Буктырма– с. Аксуат
         self.selectHydropost('Вдхр. Буктырма– с. Аксуат', 'Озерный пост 1 разряд')
         submit_button = self.browser.find_element_by_class_name('btn')
         submit_button.click()
@@ -194,7 +209,12 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
         air_temperature_input = self.browser.find_element_by_name('air_temperature') 
         ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
-        #He choose Оз. Копа – г. Кокшетау
+        time.sleep(2)
+        #He close modal
+        close_button = self.browser.find_element_by_class_name('close')
+        close_button.click()
+        time.sleep(2)
+        ##He choose Оз. Копа – г. Кокшетау
         self.selectHydropost('Оз. Копа – г. Кокшетау', 'Озерный пост 2 разряд')
         submit_button = self.browser.find_element_by_class_name('btn')
         submit_button.click()
@@ -206,7 +226,12 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
         air_temperature_input = self.browser.find_element_by_name('air_temperature') 
         ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
-        #He choose Каспийское море – Форт Шевченко
+        time.sleep(2)
+        #He close modal
+        close_button = self.browser.find_element_by_class_name('close')
+        close_button.click()
+        time.sleep(2)
+        ##He choose Каспийское море – Форт Шевченко
         self.selectHydropost('Каспийское море – Форт Шевченко', 'Морской пост 1 разряд')
         submit_button = self.browser.find_element_by_class_name('btn')
         submit_button.click()
@@ -218,7 +243,12 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         water_temperature_input = self.browser.find_element_by_name('water_temperature')
         air_temperature_input = self.browser.find_element_by_name('air_temperature') 
         ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
-        #He choose Каспийское море – п.Каламкас
+        time.sleep(2)
+        #He close modal
+        close_button = self.browser.find_element_by_class_name('close')
+        close_button.click()
+        time.sleep(2)
+        ##He choose Каспийское море – п.Каламкас
         self.selectHydropost('Каспийское море – п.Каламкас', 'Морской пост 2 разряд')
         submit_button = self.browser.find_element_by_class_name('btn')
         submit_button.click()

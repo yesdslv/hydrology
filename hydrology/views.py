@@ -4,8 +4,17 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 
 from .models import Hydrologist, Hydropost
-from .forms import GP1Form, OGP2Form
+from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form
 
+#This list is used record view for getting required form
+list_form = {'Речной пост 1 разряд' : RHP1Form, 
+        'Речной пост 2 разряд' : RHP2Form, 
+        'Речной пост 3 разряд' : RHP3Form,
+        'Морской пост 1 разряд' : SHP1Form,
+        'Морской пост 2 разряд' : SHP2Form,
+        'Озерный пост 1 разряд' : LHP1Form,
+        'Озерный пост 2 разряд' : LHP2Form,
+        }    
 
 @login_required(login_url = '/login/')
 def home(request):
@@ -17,23 +26,28 @@ def home(request):
 
 @login_required(login_url = '/login/')
 def record(request):
-    hydropost = get_object_or_404(Hydropost, nameEn = request.POST.get('hydropost', False))
     if request.method == 'POST':
-        form = GP1Form()
-        if form.is_valid():
-            return redirect('/')
-    else:
-        form = GP1Form()
-    context = { 'hydropost' : hydropost ,
-                'form': form, }
-    return render(request, 'hydrology/record.html', context)
+       category = request.GET.get('category', False)   
+       form = list_form[h_type](request.POST)
+       if form.is_valid():
+          return redirect('/')
+    elif request.method == 'GET':
+       category = request.GET.get('category', False) 
+       #TODO
+       #Add render in case of absence of key in list_form
+       try:
+          form = list_form[category]()
+       except KeyError:
+          print('error')       
+    context = { 'form' : form }
+    return render(request, 'hydrology/record.html', context) 
 
 @login_required(login_url = '/login/')
 def search_hydropost_type(request):
     if request.method == 'GET':
         try:
             hydropost = Hydropost.objects.get(nameEn = request.GET.get('hydropost', False))
-            data = { 'success': str(hydropost.category), }
+            data = { 'category' : hydropost.category.name, }
         except Hydropost.DoesNotExist:
             data = { 'error' : 'Нет такой станции', }
         return JsonResponse(data)

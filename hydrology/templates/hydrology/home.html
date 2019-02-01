@@ -2,16 +2,42 @@
 
 {% block content %}
 <h1>{{user.get_username }}</h1>
-<h2>Hydropost category</h2>
-<form action = "{% url 'record' %}" method = "post">
+<h2>Hydropost name</h2>
+<h3>Hydropost category</h3>
     {% csrf_token %}
     <select name="hydropost">
         {% for hydropost in hydroposts %}
         <option value="{{ hydropost.nameEn }}">{{ hydropost.name }}</option>
         {% endfor %}
-        <input name="asput" type = "submit" value = "Submit" />
     </select>
-</form>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#observationModal">
+    Наблюдение
+</button>
+<!-- Modal -->
+<div class="modal fade" id="observationModal" tabindex="-1" role="dialog" aria-labelledby="observationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var url_category = {% url 'category' %};
+    var url_record = {% url 'record' %}
+    var csrftoken = Cookies.get('csrftoken');
+</script>
 {% load static %}
-<script src="{% static "hydrology/hydrology.js" %}"></script>
+<script src="{% static 'hydrology/hydrology.js' %}"></script>
 {% endblock %}

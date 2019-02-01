@@ -8,6 +8,8 @@ from .logged_in import LoggedInTestCase
 
 from .models import Hydropost
 
+from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form
+
 class LoginPageTest(TestCase):
    
     def test_login_page_resolves_as_login_view(self):
@@ -60,4 +62,60 @@ class RecordPageTest(LoggedInTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_view_get_method_uses_correct_template(self):
+        hydropost = Hydropost.objects.get(code = 11919)
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Речной пост 1 разряд'},
+        )
+        self.assertTemplateUsed(response, 'hydrology/record.html')
+
+    def test_record_page_uses_proper_form_for_RHP1(self):
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Речной пост 1 разряд'},
+        )
+        self.assertIsInstance(response.context['form'], RHP1Form)
+
+    def test_record_page_uses_proper_form_for_RHP2(self):
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Речной пост 2 разряд'},
+        )
+        self.assertIsInstance(response.context['form'], RHP2Form)
+
+    def test_record_page_uses_proper_form_for_RHP3(self):
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Речной пост 3 разряд'},
+        )
+        self.assertIsInstance(response.context['form'], RHP3Form)
+
+    def test_record_page_uses_proper_form_for_LHP1(self):
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Озерный пост 1 разряд'},
+        )
+        self.assertIsInstance(response.context['form'], LHP1Form)
+    
+    def test_record_page_uses_proper_form_for_LHP2(self):
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Озерный пост 2 разряд'},
+        )
+        self.assertIsInstance(response.context['form'], LHP2Form)
+    
+    def test_record_page_uses_proper_form_for_SHP1(self):
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Морской пост 1 разряд'},
+        )
+        self.assertIsInstance(response.context['form'], SHP1Form)
+
+    def test_record_page_uses_proper_form_for_SHP2(self):
+        response = self.client.get(
+            '/record/',
+            data = { 'category' : 'Морской пост 2 разряд'},
+        )
+        self.assertIsInstance(response.context['form'], SHP2Form)
 

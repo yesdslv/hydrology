@@ -5,16 +5,23 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-        <!-- Add additional CSS in static file -->
-        <body>
-            {% load static %}
-            <div class="jumbotron jumbotron-fluid">
-                <div class="container">
-                    <img src="{% static "hydrology/NASA_logo.svg" %}" alt="Logo" height="100" width="100">
-                </div>
-            </div>
-            {% block content%}
-            {% endblock %}
-        </body>
     </head>
+    <!-- Add additional CSS in static file -->
+    <body>
+        <div class="jumbotron jumbotron-fluid">
+            <div class="container">
+                {% load static %}
+                <img src="{% static 'hydrology/NASA_logo.svg' %}" alt="Logo" height="100" width="100">
+            </div>
+        </div>
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        {% block content%}
+        {% endblock %}
+
+
+    </body>
 </html>

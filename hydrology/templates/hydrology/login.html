@@ -2,7 +2,6 @@
 
 {% block content %}
 
-<body>
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         <table>
@@ -16,11 +15,10 @@
         <input type="submit" name = "login" value="login" />
         <input type="hidden" name="next" value="{% url 'home' %}" />
     </form> 
-     {% if form.errors %}
+    {% if form.errors %}
     <div class="alert alert-danger" role="alert">
         Неправильный логин или пароль
     </div>
     {% endif %}
-</body>
 
 {% endblock %}
