@@ -82,6 +82,7 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         #He should see modal with input
         #Modal hydropost headers should be equal to hydropost name
         modal_hydropost_title = self.browser.find_element_by_id('hydropost')
+        time.sleep(2)
         self.assertEqual(modal_hydropost_title.text, hydropost_name)
         #Modal category header should be equal to hydropost category
         modal_category_title = self.browser.find_element_by_id('category')
@@ -92,6 +93,11 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             water_temperature_input = self.browser.find_element_by_name('water_temperature')
             air_temperature_input = self.browser.find_element_by_name('air_temperature')
             ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+            condition_input = self.browser.find_element_by_name('condition')
+            precipitation_input = self.browser.find_element_by_name('precipitation')
+            precipitation_type_input = self.browser.find_element_by_name('precipitation_type')
+            wind_power_input = self.browser.find_element_by_name('wind_power')
+            wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
             time.sleep(2)
         #He should see input form for Речной пост 2 разряд category
@@ -100,6 +106,11 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             water_temperature_input = self.browser.find_element_by_name('water_temperature')
             air_temperature_input = self.browser.find_element_by_name('air_temperature') 
             ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+            condition_input = self.browser.find_element_by_name('condition')
+            precipitation_input = self.browser.find_element_by_name('precipitation')
+            precipitation_type_input = self.browser.find_element_by_name('precipitation_type')
+            wind_power_input = self.browser.find_element_by_name('wind_power')
+            wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
             time.sleep(2)
         #He should see input form for Речной пост 3 разряд category
@@ -108,6 +119,9 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             water_temperature_input = self.browser.find_element_by_name('water_temperature')
             air_temperature_input = self.browser.find_element_by_name('air_temperature') 
             ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+            condition_input = self.browser.find_element_by_name('condition')
+            wind_power_input = self.browser.find_element_by_name('wind_power')
+            wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
             time.sleep(2)
         #He should see input form for Озерный пост 1 разряд category
@@ -117,6 +131,11 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             water_temperature_input = self.browser.find_element_by_name('water_temperature')
             air_temperature_input = self.browser.find_element_by_name('air_temperature') 
             ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+            condition_input = self.browser.find_element_by_name('condition')
+            precipitation_input = self.browser.find_element_by_name('precipitation')
+            precipitation_type_input = self.browser.find_element_by_name('precipitation_type')
+            wind_power_input = self.browser.find_element_by_name('wind_power')
+            wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
             time.sleep(2)
         #He should see input form for Озерный пост 2 разряд category
@@ -126,6 +145,11 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             water_temperature_input = self.browser.find_element_by_name('water_temperature')
             air_temperature_input = self.browser.find_element_by_name('air_temperature') 
             ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+            condition_input = self.browser.find_element_by_name('condition')
+            precipitation_input = self.browser.find_element_by_name('precipitation')
+            precipitation_type_input = self.browser.find_element_by_name('precipitation_type')
+            wind_power_input = self.browser.find_element_by_name('wind_power')
+            wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
             time.sleep(2)
         #He should see input form for Морской пост 1 разряд category
@@ -135,6 +159,11 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             water_temperature_input = self.browser.find_element_by_name('water_temperature')
             air_temperature_input = self.browser.find_element_by_name('air_temperature') 
             ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+            condition_input = self.browser.find_element_by_name('condition')
+            precipitation_input = self.browser.find_element_by_name('precipitation')
+            precipitation_type_input = self.browser.find_element_by_name('precipitation_type')
+            wind_power_input = self.browser.find_element_by_name('wind_power')
+            wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
             time.sleep(2)
         #He should see input form for Морской пост 2 разряд category
@@ -144,12 +173,16 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             water_temperature_input = self.browser.find_element_by_name('water_temperature')
             air_temperature_input = self.browser.find_element_by_name('air_temperature') 
             ice_thickness_input = self.browser.find_element_by_name('ice_thickness')
+            precipitation_input = self.browser.find_element_by_name('precipitation')
+            precipitation_type_input = self.browser.find_element_by_name('precipitation_type')
+            wind_power_input = self.browser.find_element_by_name('wind_power')
+            wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
             time.sleep(2)
         #Click button for submitting observation data to database
         save_button = self.browser.find_element_by_name('save')
         save_button.click()
-        time.sleep(2)
+        time.sleep(4)
         success_alert = self.browser.find_element_by_css_selector('div.alert.alert-success')
 
 
