@@ -1,1 +1,25 @@
-{{ form }}
+<form id="observation" action="{% url 'record' %}" method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+        {# Put level and pile fields in one row #}
+        {# Order of fields is very imporant for opening and closing div row #}
+        {# First should be level field, right after him pile field#}
+        {% if field.name == "level" %}
+        <div class="row">
+            <div class="col-4 padding-0">
+                {{ field }}
+            </div>
+        {% elif field.name == "pile" %}
+            <div class="col-2 padding-0">
+                {{ field }}
+            </div>
+        </div>
+        <br>
+        {# Another fields are located on its own row #}
+        {% else %}
+            {{ field }}
+        {% endif %}
+    {% endfor%}
+    
+</form>

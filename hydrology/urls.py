@@ -5,9 +5,8 @@ from django.conf.urls.static import static
 from . import views
 
 
-
 urlpatterns = [
     path('', views.home, name = 'home'),
-    path('category/', views.search_hydropost_type, name = 'category'),
+    path('category/', views.search_hydropost_category, name = 'category'),
     path('record/', views.record, name = 'record'),
 ]

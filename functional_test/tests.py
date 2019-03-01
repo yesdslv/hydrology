@@ -3,7 +3,10 @@ from django.contrib.auth.models import User
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 
 import unittest
 
@@ -68,12 +71,29 @@ class VisitorLoginTest(StaticLiveServerTestCase):
     def selectHydropost(self, hydropost_name, hydropost_category):
         #Hydrologist select one hydropost
         select = Select(self.browser.find_element_by_name('hydropost'))
-        #select.select_by_visible_text(hydropost_name)
         select.select_by_visible_text(hydropost_name)
-        #Hydrologist should see hydropost category in header h3
-        ##That one is for testing get request 
-        ##We get hydropost category
-        time.sleep(1)
+        self.browser.implicitly_wait(1)
+
+    ##This function fills input fields with wrong data(that exceeds max or below min)
+    ##Also enters data to fields, that filled in pair
+    ##For example if hydrologist enter precipitation data, he must choose precipitation type and vice versa 
+    def sumbitWrongObservationData(self, hydropost_name, hydropost_category):
+        self.selectHydropost(hydropost_name, hydropost_category)
+        observation_button = self.browser.find_element_by_id('modalTrigger')
+        observation_button.click()
+        #He should see input form for Речной пост 1 разряд category
+        if hydropost_category == 'Речной пост 1 разряд':
+            ##Cause we use selectpicker instead of standard select, selenium use Action Chains
+            select_button = self.browser.find_element_by_css_selector('button[data-id="id_precipitation_type"]')
+            select_button.click()
+            time.sleep(3)
+            select_precipitation_type = Select(self.browser.find_element_by_name('precipitation_type'))
+            select_precipitation_type.select_by_visible_text('Жидкие осадки')
+            
+            select_precipitaton_type = self.browser.find_element_by_css_selector('option[value="жидкие"]')
+            select_precipitaton_type.click()
+            self.browser.implicitly_wait(3)
+             
 
     def submitObservationData(self, hydropost_name, hydropost_category):
         self.selectHydropost(hydropost_name, hydropost_category)
@@ -81,8 +101,12 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         observation_button.click()
         #He should see modal with input
         #Modal hydropost headers should be equal to hydropost name
-        modal_hydropost_title = self.browser.find_element_by_id('hydropost')
-        time.sleep(2)
+        modal_hydropost_title = WebDriverWait(self.browser, 10).until(
+                EC.visibility_of_element_located
+                ((By.ID, 'hydropost'))
+        )
+        #self.browser.find_element_by_id('hydropost')
+        #self.browser.implicitly_wait(2)
         self.assertEqual(modal_hydropost_title.text, hydropost_name)
         #Modal category header should be equal to hydropost category
         modal_category_title = self.browser.find_element_by_id('category')
@@ -99,7 +123,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             wind_power_input = self.browser.find_element_by_name('wind_power')
             wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
-            time.sleep(2)
         #He should see input form for Речной пост 2 разряд category
         elif hydropost_category == 'Речной пост 2 разряд': 
             level_input = self.browser.find_element_by_name('level')
@@ -112,7 +135,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             wind_power_input = self.browser.find_element_by_name('wind_power')
             wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
-            time.sleep(2)
         #He should see input form for Речной пост 3 разряд category
         elif hydropost_category == 'Речной пост 3 разряд': 
             level_input = self.browser.find_element_by_name('level')
@@ -123,7 +145,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             wind_power_input = self.browser.find_element_by_name('wind_power')
             wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
-            time.sleep(2)
         #He should see input form for Озерный пост 1 разряд category
         elif hydropost_category == 'Озерный пост 1 разряд':
             level_input = self.browser.find_element_by_name('level')
@@ -137,7 +158,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             wind_power_input = self.browser.find_element_by_name('wind_power')
             wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
-            time.sleep(2)
         #He should see input form for Озерный пост 2 разряд category
         elif hydropost_category == 'Озерный пост 2 разряд': 
             level_input = self.browser.find_element_by_name('level')
@@ -151,7 +171,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             wind_power_input = self.browser.find_element_by_name('wind_power')
             wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
-            time.sleep(2)
         #He should see input form for Морской пост 1 разряд category
         elif hydropost_category == 'Морской пост 1 разряд':
             level_input = self.browser.find_element_by_name('level')
@@ -165,7 +184,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             wind_power_input = self.browser.find_element_by_name('wind_power')
             wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
-            time.sleep(2)
         #He should see input form for Морской пост 2 разряд category
         elif hydropost_category == 'Морской пост 2 разряд':
             level_input = self.browser.find_element_by_name('level')
@@ -178,7 +196,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
             wind_power_input = self.browser.find_element_by_name('wind_power')
             wind_direction_input = self.browser.find_element_by_name('wind_direction')
             level_input.send_keys('12')
-            time.sleep(2)
         #Click button for submitting observation data to database
         save_button = self.browser.find_element_by_name('save')
         save_button.click()
@@ -198,9 +215,7 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         password = self.browser.find_element_by_name('password')
         username.send_keys('Didar')
         password.send_keys('123456')
-        time.sleep(1)
         loginButton = self.browser.find_element_by_name('login')
-        time.sleep(1)
         loginButton.click()
         #Browser stays on home page with login form
         self.assertRegex(self.browser.current_url, '/login')
@@ -212,29 +227,31 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         password = self.browser.find_element_by_name('password')
         username.clear()
         password.clear()
-        time.sleep(1)
         username.send_keys('Didar')
         password.send_keys('password')
-        time.sleep(1)
         loginButton = self.browser.find_element_by_name('login')
-        time.sleep(1)
         loginButton.click()
         #Hydrologist figure out that he succesfully logged in
         #His link has been changed
-        time.sleep(1)
         self.assertRegex(self.browser.current_url, '/')
         #Hydrologist see his user name
         username = self.browser.find_element_by_tag_name('h1')
-        time.sleep(1)
         self.assertEqual('Наблюдатель: Didar', username.text)
+        
+        
+        #Hydrologist decide to enter observation data
+        ##Test Validation error messages, hydrologist sumbits incorrect data 
+        self.sumbitWrongObservationData('Р. Силеты – Новомарковка', 'Речной пост 1 разряд')
+        
+        
+        
         #Hydrologist choose observation date        
         datepicker = self.browser.find_element_by_id('datepicker')
         datepicker.click()
-        time.sleep(1)
+        self.browser.implicitly_wait(1)
         #He choose today date
         today_datepicker = self.browser.find_element_by_css_selector('.ui-datepicker-today')
         today_datepicker.click()
-        time.sleep(1)
         #Hydrologists should see his own list of stations 
         ##We check posts,that observed by Didar
         self.checkForRowInListTable('Р. Силеты – Новомарковка')
@@ -250,7 +267,6 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         self.assertRegex(self.browser.current_url, '/')
         #Hydrologist should verify that he stays on the same page 
         self.assertRegex(self.browser.current_url, '/')
-        #Hydrologist decide to enter observation data
         ##He choose Р. Силеты – Новомарковка for observation data submit
         self.submitObservationData('Р. Силеты – Новомарковка', 'Речной пост 1 разряд')
         ##He choose р. Есиль - г.Астана for observation data submit
@@ -265,5 +281,5 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         self.submitObservationData('Каспийское море – Форт Шевченко', 'Морской пост 1 разряд')
         ##He choose Каспийское море – п.Каламкас
         self.submitObservationData('Каспийское море – п.Каламкас', 'Морской пост 2 разряд')
-        time.sleep(1)
+        self.browser.implicitly_wait(1)
         self.fail('Finish Test')

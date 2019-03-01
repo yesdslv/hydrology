@@ -1,42 +1,73 @@
 {% extends "hydrology/base_generic.html" %}
 
 {% block content %}
-<h1>{{user.get_username }}</h1>
-<h2>Hydropost name</h2>
-<h3>Hydropost category</h3>
-    {% csrf_token %}
-    <select name="hydropost">
-        {% for hydropost in hydroposts %}
-        <option value="{{ hydropost.nameEn }}">{{ hydropost.name }}</option>
-        {% endfor %}
-    </select>
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#observationModal">
-    Наблюдение
-</button>
-<!-- Modal -->
-<div class="modal fade" id="observationModal" tabindex="-1" role="dialog" aria-labelledby="observationModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
+<div class="container">
+    <div class="row justify-content-md-center">
+        <div class="row justify-content-md-center">
+            <div class="col-md-auto">
+                <h1>Наблюдатель: {{user.get_username }}</h1>
+                <br>
+                <label for="hydropost">Гидропост:</label>
+                {% csrf_token %}
+                <select name="hydropost">
+                    {% for hydropost in hydroposts %}
+                    <option value="{{ hydropost.nameEn }}">{{ hydropost.name }}</option>
+                    {% endfor %}
+                </select>
+                <p>Дата: <input type="text" id="datepicker"></p>
 
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary">Save changes</button>
+                <label for="hour">Час:</label>
+                <input type="number" name="hour"  min="0" max="23" step="1" value="0">
+
+                <label for="minute">Минута:</label>
+                <input type="number" name="minute"  min="0" max="59" step="1"  value="0">
+                <br>
+                <!-- Button trigger modal -->
+                <button type="button" id="modalTrigger" class="btn-lg btn-primary" data-toggle="modal" data-target="#observationModal">
+                    Ввести наблюдение
+                </button>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="observationModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="hydropost">HydropostName</h1>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"> </button>
+                <span aria-hidden="true">&times;</span>
+            </div>
+            <div class="modal-header">
+                <h4 class="modal-title" id="category">HydropostCategory</h4>
+            </div>
+            <div class="modal-header">
+                <h4 class="modal-title" id="observationDate">ObservationDate</h4>
+            </div>
+            <div class="modal-header">
+                <h4 class="modal-title" id="observationTime">ObservationTime</h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <div class="container-fluid" id="success" style="display: none;">
+                    <div class="alert alert-success" role="alert">Наблюдение сохранено</div>
+                </div>
+                <div class="container-fluid" id="fail" style="display: none;">
+                    <div class="alert alert-danger" role="alert">Наблюдение не отправлено!</div>
+                </div>
+                <img src="static/hydrology/loading.gif" id="loading" style="display: none;">
+                <button type="button" name="save" class="btn btn-primary">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    var url_category = {% url 'category' %};
-    var url_record = {% url 'record' %}
-    var csrftoken = Cookies.get('csrftoken');
+    var url_category = new String({% url 'category' %});
+    var url_record = new String({% url 'record' %});
 </script>
 {% load static %}
 <script src="{% static 'hydrology/hydrology.js' %}"></script>
