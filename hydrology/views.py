@@ -1,15 +1,19 @@
 from django.shortcuts import render, redirect
+from django.core import serializers
+from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
 from django.db import IntegrityError
 
 from datetime import datetime, timedelta
+import json
 
 from .models import Hydrologist, Hydropost, Observation
-from .models import Level, Ripple, WaterTemperature, AirTemperature, IceThickness, Precipitation, Wind
-from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form
+from .models import Level, Ripple, WaterTemperature, AirTemperature, IceThickness, Precipitation, Wind, Condition, Comment
+from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form, StartEndDateTimeForm
+from .decorators import observer_required, engineer_required
 
 #This list is used by record view to get required form
 list_form = {
@@ -24,13 +28,28 @@ list_form = {
 
 @login_required(login_url = '/login/')
 def home(request):
+    hydrologist = Hydrologist.objects.get(user =request.user)
+    occupation = hydrologist.occupation
+    if occupation == Hydrologist.OBSERVER:
+            return redirect('observation')
+    elif occupation == Hydrologist.ENGINEER:
+            return redirect('data')
+    #In case Hydrologist occupation field contains non-valid value
+    #It renders message 'contact admin'
+    return render(request, 'hydrology/home.html') 
+    
+
+@login_required(login_url = '/login/')
+@observer_required
+def observation(request):
     user = request.user
     hydrologist = Hydrologist.objects.get(user = user)
     hydroposts = hydrologist.hydropost_set.all()
     context = { 'hydroposts' : hydroposts ,}
-    return render(request, 'hydrology/home.html', context)
+    return render(request, 'hydrology/observation.html', context)
 
 @login_required(login_url = '/login/')
+@observer_required
 def record(request):
     if request.method == 'POST' and request.is_ajax():
        #By whom observation record is submitted 
@@ -45,8 +64,8 @@ def record(request):
        form = list_form[category](request.POST)
        #When data is entered
        entry_datetime = datetime.utcnow()
-       #Remove seconds and microseconds
-       entry_datetime = entry_datetime.replace(second = 0, microsecond = 0)
+       #Remove seconds
+       entry_datetime = entry_datetime.replace(second = 0)
        #When data is observed
        local_date = request.POST.get('date', False)
        local_hour = request.POST.get('hour', False)
@@ -59,11 +78,14 @@ def record(request):
        #Difference between hydrologist timezone and UTC
        offset = request.POST.get('minute', False)
        observation_datetime = observation_datetime - timedelta(minutes = int(offset))
+       ### print('Observation datetime' + str(observation_datetime))
+       ### print('entry_datetime' + str(entry_datetime))
        #Checks if data is not exceed min and max range or all necessary data is submitted
        if form.is_valid():
           try:
             #Json response done(success) status
             status = 200
+            print(form.cleaned_data)
             for key, value in form.cleaned_data.items():
                 #Do not consider empty fields
                 if value is not None:
@@ -72,28 +94,46 @@ def record(request):
                               ripple = value,
                               observation_datetime = observation_datetime,
                               entry_datetime = entry_datetime,
-                              observation = observation
+                              observation = observation,
                         )
                     elif key == 'water_temperature':
                         WaterTemperature.objects.create(
                               water_temperature = value,
                               observation_datetime = observation_datetime,
                               entry_datetime = entry_datetime,
-                              observation = observation
+                              observation = observation,
                         )
                     elif key == 'air_temperature':
                         AirTemperature.objects.create(
                               air_temperature = value,
                               observation_datetime = observation_datetime,
                               entry_datetime = entry_datetime,
-                              observation = observation
+                              observation = observation,
                         )
                     elif key == 'ice_thickness':
                         IceThickness.objects.create(
                               ice_thickness = value,
                               observation_datetime = observation_datetime,
                               entry_datetime = entry_datetime,
-                              observation = observation
+                              observation = observation,
+                        )
+                    elif key == 'comment':
+                        Comment.objects.create(
+                                comment = value,
+                                observation_datetime = observation_datetime,
+                                entry_datetime = entry_datetime,
+                                observation = observation,
+                        )
+                    elif key == 'condition' and value:
+                        #2 water object condition can be submitted
+                        #If 2 water object conditions are submitted,
+                        #Combine the in 1 string separated by semicolon(;)
+                        condition = ';'.join(value)
+                        Condition.objects.create(
+                                condition = condition,
+                                observation_datetime = observation_datetime,
+                                entry_datetime = entry_datetime,
+                                observation = observation,
                         )
                     elif key == 'level':
                         level = value
@@ -188,6 +228,7 @@ def record(request):
     return render(request, 'hydrology/record.html', context) 
 
 @login_required(login_url = '/login/')
+@observer_required
 def search_hydropost_category(request):
     if request.method == 'GET' and request.is_ajax():
         try:
@@ -196,3 +237,24 @@ def search_hydropost_category(request):
         except Hydropost.DoesNotExist:
             data = { 'error' : 'Нет такой станции', }
         return JsonResponse(data)
+    
+@login_required(login_url = '/login/')
+@engineer_required
+def data(request):
+    if request.method == 'GET' and request.is_ajax():
+            start_datetime = request.GET.get('start_datetime', False)
+            end_datetime = request.GET.get('end_datetime', False)
+            print(start_datetime)
+            print(end_datetime)
+            form = StartEndDateTimeForm()
+            level_query_set = Level.objects.filter(observation_datetime__range = 
+                    [start_datetime, end_datetime]
+            ).values('level', 'observation_datetime', 'entry_datetime')
+            data1 = Level.objects.get_table(start_datetime, end_datetime)
+            print(data1)
+            print(type(data1))
+            return JsonResponse(data1)
+    elif request.method == 'GET':
+            form = StartEndDateTimeForm()
+    context = { 'form' : form, }
+    return render(request, 'hydrology/data.html', context)
