@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 
 from .weather_and_condition_types import PRECIPITATION_TYPES, WIND_POWER_TYPES, WIND_DIRECTION_TYPES, CONDITION_TYPES
 
-from .managers import MeasurementManager 
 
 class Hydrologist(models.Model):
     OBSERVER  = 'Наблюдатель'
@@ -58,6 +57,7 @@ class Hydropost(models.Model):
                     through_fields = ('hydropost', 'hydrologist'),
                     )
 
+    
     def __str__(self):
         return self.name
     class Meta:
@@ -77,81 +77,35 @@ class Observation(models.Model):
     def __str__(self):
         return ' '.join(['Наблюдение соверашается ', self.hydrologist.user.username, 'на', self.hydropost.name,])
 
-#Basic class that holds basic measurement information
+#Class that holds all observation record related information
 #Observation date and time, when actual observation is made
 #Entry date and time, when data is submitted to database
 #Time zone is UTC
-class AbstractMeasurement(models.Model):
+class Measurement(models.Model):
     observation_datetime = models.DateTimeField()
     entry_datetime = models.DateTimeField()
     observation = models.ForeignKey(Observation, on_delete = models.DO_NOTHING)
+    level = models.IntegerField()
+    pile = models.IntegerField(blank = True, null = True)
+    ripple = models.IntegerField(blank = True, null = True)
+    water_temperature = models.DecimalField(max_digits = 5, decimal_places = 2,blank = True, null = True)
+    air_temperature = models.DecimalField(max_digits = 5, decimal_places = 2, blank = True, null = True)
+    ice_thickness = models.IntegerField(blank = True, null = True)
+    precipitation = models.DecimalField(max_digits = 5, decimal_places = 2, blank = True, null = True)
+    precipitation_type = models.CharField(max_length = 31, choices = PRECIPITATION_TYPES, blank = True, null = True) 
+    wind_direction = models.CharField(max_length = 17, choices = WIND_DIRECTION_TYPES, blank = True, null = True)
+    wind_power = models.CharField(max_length = 10, choices = WIND_POWER_TYPES, blank = True, null = True) 
+    #Observer can submit 2 water object conditions
+    #Combine in case of 2 water object conditions to 1 string separated by ;(semicolon)
+    water_object_condition = models.CharField(max_length = 200, choices = CONDITION_TYPES, blank = True, null = True)
+    comment = models.CharField(max_length = 255, blank = True, null = True)
 
     class Meta:
         unique_together = ('observation','observation_datetime')
-        abstract = True
-        
-class Level(AbstractMeasurement):
-    level = models.DecimalField(max_digits = 5, decimal_places = 2)
-    pile = models.IntegerField(null = True)
-    objects = MeasurementManager()
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'level'
-class Discharge(AbstractMeasurement):
+        db_table = 'measurements'
+                
+class Discharge(models.Model):
     discharge = models.DecimalField(max_digits = 5, decimal_places = 2)
 
-    class Meta(AbstractMeasurement.Meta):
+    class Meta():
         db_table = 'discharge'
-
-class Ripple(AbstractMeasurement):
-    ripple = models.IntegerField()
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'ripple'
-
-class WaterTemperature(AbstractMeasurement):
-    water_temperature = models.DecimalField(max_digits = 5, decimal_places = 2)
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'water_temperature'
-
-class AirTemperature(AbstractMeasurement):
-    air_temperature = models.DecimalField(max_digits = 5, decimal_places = 2)
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'air_temperature'
-
-class IceThickness(AbstractMeasurement):
-    ice_thickness = models.IntegerField()
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'ice_thickness'
-
-class Precipitation(AbstractMeasurement):
-    precipitation = models.DecimalField(max_digits = 5, decimal_places = 2)
-    precipitation_type = models.CharField(max_length = 31, choices = PRECIPITATION_TYPES) 
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'precipitation'
-
-class Wind(AbstractMeasurement):
-    wind_direction = models.CharField(max_length = 17, choices = WIND_DIRECTION_TYPES)
-    wind_power = models.CharField(max_length = 10, choices = WIND_POWER_TYPES) 
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'wind'
-
-#Observer can submit 2 water object conditions
-#Combine in case of 2 water object conditions to 1 string separated by ;(semicolon)
-#Save it to water_object_condition_field
-class Condition(AbstractMeasurement):
-    water_object_condition = models.CharField(max_length = 200, choices = CONDITION_TYPES)
-    
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'water_object_condition'
-
-class Comment(AbstractMeasurement):
-    comment = models.CharField(max_length = 255)
-
-    class Meta(AbstractMeasurement.Meta):
-        db_table = 'comment'

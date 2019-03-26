@@ -1,6 +1,4 @@
 from django.shortcuts import render, redirect
-from django.core import serializers
-from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from django.http import JsonResponse, HttpResponse
@@ -8,10 +6,10 @@ from django.db.models import Q
 from django.db import IntegrityError
 
 from datetime import datetime, timedelta
+from collections import OrderedDict
 import json
 
-from .models import Hydrologist, Hydropost, Observation
-from .models import Level, Ripple, WaterTemperature, AirTemperature, IceThickness, Precipitation, Wind, Condition, Comment
+from .models import Hydrologist, Hydropost, Observation, Measurement
 from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form, StartEndDateTimeForm
 from .decorators import observer_required, engineer_required
 
@@ -85,119 +83,22 @@ def record(request):
           try:
             #Json response done(success) status
             status = 200
-            print(form.cleaned_data)
-            for key, value in form.cleaned_data.items():
-                #Do not consider empty fields
-                if value is not None:
-                    if key == 'ripple':
-                        Ripple.objects.create(
-                              ripple = value,
-                              observation_datetime = observation_datetime,
-                              entry_datetime = entry_datetime,
-                              observation = observation,
-                        )
-                    elif key == 'water_temperature':
-                        WaterTemperature.objects.create(
-                              water_temperature = value,
-                              observation_datetime = observation_datetime,
-                              entry_datetime = entry_datetime,
-                              observation = observation,
-                        )
-                    elif key == 'air_temperature':
-                        AirTemperature.objects.create(
-                              air_temperature = value,
-                              observation_datetime = observation_datetime,
-                              entry_datetime = entry_datetime,
-                              observation = observation,
-                        )
-                    elif key == 'ice_thickness':
-                        IceThickness.objects.create(
-                              ice_thickness = value,
-                              observation_datetime = observation_datetime,
-                              entry_datetime = entry_datetime,
-                              observation = observation,
-                        )
-                    elif key == 'comment':
-                        Comment.objects.create(
-                                comment = value,
-                                observation_datetime = observation_datetime,
-                                entry_datetime = entry_datetime,
-                                observation = observation,
-                        )
-                    elif key == 'condition' and value:
-                        #2 water object condition can be submitted
-                        #If 2 water object conditions are submitted,
-                        #Combine the in 1 string separated by semicolon(;)
-                        condition = ';'.join(value)
-                        Condition.objects.create(
-                                condition = condition,
-                                observation_datetime = observation_datetime,
-                                entry_datetime = entry_datetime,
-                                observation = observation,
-                        )
-                    elif key == 'level':
-                        level = value
-                    elif key == 'precipitation':
-                        precipitation = value
-                    elif key == 'pile' and value:
-                        #Form MultiSelect POST list, get first element in list
-                        pile = value[0]
-                    elif key == 'precipitation_type' and value:
-                        #Form Select POST list, get first element in list
-                        precipitation_type = value[0]
-                    elif key == 'wind_direction' and value:
-                        #Form Select POST list, get first element in list
-                        wind_direction = value[0]
-                    elif key == 'wind_power' and value:
-                        #Form Select POST list, get first element in list
-                        wind_power = value[0]
-            #Check if variables precipitation and precipitation_type are initialized
-            #In dict for loop earlier
-            if 'precipitation' in locals() and 'precipitation_type' in locals(): 
-                #Thus model Precipitation consists of 'precipitation' and 'precipitation_type' fields
-                #And it is required according to observation policy to fill both fields
-                #Call Precipiation model object once
-                #save 'precipitation' and 'precipitation_type' at the same time  
-                Precipitation.objects.create(
-                    precipitation = precipitation,
-                    precipitation_type = precipitation_type,
-                    observation_datetime = observation_datetime,
-                    entry_datetime = entry_datetime,
-                    observation = observation
-                )
-            #Check if variables precipitation and precipitation_type are initialized  
-            #In dict for loop earlier
-            if 'wind_direction' in locals() and 'wind_power' in locals(): 
-                #Thus model Wind consists of 'wind_direction' and 'wind_power' fields
-                #And it is required according to observation policy to fill both fields
-                #Call Wind model object once
-                #save 'wind_direction' and 'wind_power' at the same time  
-                Wind.objects.create(
-                    wind_direction = wind_direction,
-                    wind_power = wind_power,
-                    observation_datetime = observation_datetime,
-                    entry_datetime = entry_datetime,
-                    observation = observation
-                )
-            #Check if variable pile is initialized  
-            #In dict for loop earlier
-            #Thus model Level consists of 'level' and 'pile' fields
-            #Check if pile variable initialized and save level with or without pile data
-            if 'pile' in locals():
-                Level.objects.create(
-                    level = level,
-                    pile = pile,
-                    observation_datetime = observation_datetime,
-                    entry_datetime = entry_datetime,
-                    observation = observation
-                ) 
-            else:
-                Level.objects.create(
-                    level = level,
-                    observation_datetime = observation_datetime,
-                    entry_datetime = entry_datetime,
-                    observation = observation
-                )
+            Measurement.objects.create(
+                level = form.cleaned_data.get('level'),
+                pile = form.cleaned_data.get('pile'),
+                water_temperature = form.cleaned_data.get('water_temperature'),
+                ice_thickness = form.cleaned_data.get('ice_thickness'),
+                air_temperature = form.cleaned_data.get('air_temperature'),
+                ripple = form.cleaned_data.get('ripple'),
+                precipitation = form.cleaned_data.get('precipitation'),
+                precipitation_type = form.cleaned_data.get('precipitation_type'),
+                wind_direction = form.cleaned_data.get('wind_direction'),
+                wind_power = form.cleaned_data.get('wind_power'),
+                water_object_condition = form.cleaned_data.get('water_object_condition'),
+                observation_datetime= observation_datetime,
+                entry_datetime = entry_datetime,
+                observation= observation,
+            ) 
             data = { 'done' : 'done',}
           #When observation and observation_date are not unique
           except IntegrityError as error_data:
@@ -241,20 +142,73 @@ def search_hydropost_category(request):
 @login_required(login_url = '/login/')
 @engineer_required
 def data(request):
-    if request.method == 'GET' and request.is_ajax():
-            start_datetime = request.GET.get('start_datetime', False)
-            end_datetime = request.GET.get('end_datetime', False)
-            print(start_datetime)
-            print(end_datetime)
-            form = StartEndDateTimeForm()
-            level_query_set = Level.objects.filter(observation_datetime__range = 
-                    [start_datetime, end_datetime]
-            ).values('level', 'observation_datetime', 'entry_datetime')
-            data1 = Level.objects.get_table(start_datetime, end_datetime)
-            print(data1)
-            print(type(data1))
-            return JsonResponse(data1)
+    if request.method == 'POST' and request.is_ajax():
+        form = StartEndDateTimeForm(request.POST)
+        #for key in request.POST:
+        #    print('Key is ' + str(key))
+        #    print('Value is ' + str(request.POST.get(key, False)))
+        start_datetime = request.POST.get('start_datetime', False)
+        end_datetime = request.POST.get('end_datetime', False)
+        #Used in pagination(limit the query(start,length)), 
+        #By which column ordered(index is passed),
+        #Order direction(asc or desc)
+        #In search hydropost column  and show requested page
+        start = request.POST.get('start', False)
+        length = request.POST.get('length', False)
+        column_index_order = request.POST.get('order[0][column]', False)
+        order_dir = request.POST.get('order[0][dir]',False)
+        search_value = request.POST.get('search[value]', False)
+        #TODO validate that int type variable passed
+        start = int(start)
+        length = int(length)
+        end = start + length
+        column_index_order = int(column_index_order)
+        if order_dir == 'asc':
+            order_dir = ''
+        elif order_dir == 'desc':
+            order_dir = '-'
+        #Order of list is important
+        #Order of list is related to order of columns in datatable
+        field_list = [
+            'observation__hydropost__region__name',
+            'observation__hydrologist__user__first_name',
+            'observation__hydrologist__user__last_name',
+            'entry_datetime',
+            'observation__hydropost__name', 
+            'observation_datetime', 
+            'level',
+            'water_object_condition',
+            'air_temperature',
+            'water_temperature',
+            'precipitation',
+            'precipitation_type',
+            'wind_direction',
+            'wind_power',
+        ]
+        #Add 3, cause order is not considered for first three elements,
+        measurements = Measurement.objects.filter(
+            observation_datetime__range = [start_datetime, end_datetime],
+            observation__hydropost__name__icontains = search_value
+        ).order_by(order_dir + field_list[column_index_order + 3]
+        ).values(*field_list)
+        total_records = Measurement.objects.count() 
+        result_json = OrderedDict()
+        #Used for pagination
+        result_json['draw'] = request.POST.get('draw', False) 
+        result_json['recordsTotal'] = total_records
+        result_json['recordsFiltered'] = len(measurements) 
+        result_json['data'] = []
+        measurements = measurements[start:end]
+        for measurement in measurements:
+            #Rename some keys
+            measurement['hydropost_name'] = measurement.pop('observation__hydropost__name')
+            measurement['region'] = measurement.pop('observation__hydropost__region__name')
+            first_name = measurement.pop('observation__hydrologist__user__first_name')
+            last_name = measurement.pop('observation__hydrologist__user__last_name')
+            measurement['observer'] = str(first_name) + " " + str(last_name)
+            result_json['data'].append(measurement)
+        return JsonResponse(result_json)
     elif request.method == 'GET':
-            form = StartEndDateTimeForm()
+        form = StartEndDateTimeForm()
     context = { 'form' : form, }
     return render(request, 'hydrology/data.html', context)

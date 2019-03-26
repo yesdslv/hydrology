@@ -1,0 +1,68 @@
+{% extends "hydrology/base_generic.html" %}
+
+{% block content %}
+
+<form id="startenddatetime" action="{% url 'data' %}" method="POST">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-6">
+            <div class="input-group date" id="startdatetimepicker" data-target-input="nearest">
+                {{ form.start_datetime }}
+                <div class="input-group-append" data-target="#startdatetimepicker" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="input-group date" id="enddatetimepicker" data-target-input="nearest">
+                {{ form.end_datetime }}
+                <div class="input-group-append" data-target="#enddatetimepicker" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<br>
+<table id="datatable" class="display" style="width:100%">
+    {% csrf_token %}
+    <thead>
+        <tr>
+            <th></th>
+            <th>Гидропост</th>
+            <th>Время наблюдения</th>
+            <th>Уровень воды</th>
+            <th>Состояние водного объекта</th>
+            <th>Температура воды</th>
+            <th>Температура воздуха</th>
+            <th>Кол-во осадков</th>
+            <th>Тип осадков</th>
+            <th>Направление ветра</th>
+            <th>Сила ветра</th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <th></th>
+            <th>Гидропост</th>
+            <th>Время наблюдения</th>
+            <th>Уровень воды</th>
+            <th>Состояние водного объекта</th>
+            <th>Температура воды</th>
+            <th>Температура воздуха</th>
+            <th>Кол-во осадков</th>
+            <th>Тип осадков</th>
+            <th>Направление ветра</th>
+            <th>Сила ветра</th>
+        </tr>
+    </tfoot>
+</table>
+
+<script>
+    var url_data = new String({% url 'data' %});
+</script>
+
+{% load static %}
+<script src="{% static 'hydrology/data.js' %}"></script>
+
+{% endblock %}

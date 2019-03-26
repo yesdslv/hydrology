@@ -39,7 +39,6 @@ $('select[name="hydropost"]').change(function() {
 $.datepicker.setDefaults($.datepicker.regional["ru"]);
 $("#datepicker").datepicker({
 	dateFormat: "yy-mm-dd",
-	minDate: -7,
 	maxDate: 0,
 	onSelect: function(date) {
 		currentDate = date;

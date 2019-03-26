@@ -1,16 +1,29 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.urls import resolve, reverse
+from django.core.management import call_command
+from django.utils import timezone
+from django.db.models import Q
 
-from .models import Hydrologist, Hydropost, Observation
+import datetime
 
+from .models import Hydrologist, Hydropost, Observation, Measurement 
+
+#Create three users
+#First is observer, assign to him observed hydroposts
+#Second engineer
+#Third hydrologist, in hydrologist model default occupation value observer  
 class LoggedInTestCase(TestCase):
     fixtures = ['hydrology/fixtures/fixtures.json']
     
     def setUp(self):
-        new_user = User.objects.create_user(username='username', password='password')
-        self.client.login(username='username', password='password')
-        new_hydrologist = Hydrologist.objects.create(user = new_user)  
+        #Create user
+        new_user = User.objects.create_user(username='observer', password='password')
+        #Assign user to observers
+        new_hydrologist = Hydrologist.objects.create(
+                user = new_user,
+                occupation = Hydrologist.OBSERVER,        
+        )  
         ##Р. Силеты – Новомарковка
         ##r. Silety - Novomarkovka
         ##Тип ГП-1
@@ -39,18 +52,50 @@ class LoggedInTestCase(TestCase):
         ##Kaspiyskoye more – p.Kalamkas
         ##Тип МГП-2
         seventhHydropost = Hydropost.objects.get(code = 97057)
-        ##Didar will enter data for these hydroposts
-        Observation.objects.create(hydropost = firstHydropost,
+        ##Observer will enter data for these hydroposts
+        first_hydropost_observation = Observation.objects.create(hydropost = firstHydropost,
                             hydrologist = new_hydrologist)
-        Observation.objects.create(hydropost = secondHydropost,
+        second_hydropost_observation = Observation.objects.create(hydropost = secondHydropost,
                             hydrologist = new_hydrologist)
-        Observation.objects.create(hydropost = thirdHydropost,
+        third_hydropost_observation = Observation.objects.create(hydropost = thirdHydropost,
                             hydrologist = new_hydrologist)
-        Observation.objects.create(hydropost = fourthHydropost,
+        fourth_hydropost_observation = Observation.objects.create(hydropost = fourthHydropost,
                             hydrologist = new_hydrologist)
-        Observation.objects.create(hydropost = fifthHydropost,
+        fifth_hydropost_observation = Observation.objects.create(hydropost = fifthHydropost,
                             hydrologist = new_hydrologist)
-        Observation.objects.create(hydropost = sixthHydropost,
+        sixth_hydropost_observation = Observation.objects.create(hydropost = sixthHydropost,
                             hydrologist = new_hydrologist)
-        Observation.objects.create(hydropost = seventhHydropost,
+        seventh_hydropost_observation = Observation.objects.create(hydropost = seventhHydropost,
                             hydrologist = new_hydrologist)
+
+        observations = Observation.objects.filter(hydrologist = new_hydrologist)  
+        #Create new user
+        new_user = User.objects.create_user(username='engineer', password='password')
+        #Assign user to engineers
+        new_hydrologist = Hydrologist.objects.create(
+                user = new_user,
+                occupation = Hydrologist.ENGINEER,
+        )
+        #Create new user
+        new_user = User.objects.create_user(username='hydrologist', password='password')
+        new_hydrologist = Hydrologist.objects.create(user = new_user)
+        #Start point for datetime
+        init_datetime = datetime.datetime.strptime('2019-03-01 10:00:00', '%Y-%m-%d %H:%M:%S')
+        #Create 5 days Level observation for Р. Силеты – Новомарковка(11242)
+        for day in range(5):
+            #Input some observation data
+            #Time when observer makes his observation
+            observation_measurement_datetime = init_datetime - datetime.timedelta(days = day, minutes=30)
+            #Remove seconds and microseconds
+            observation_measurement_datetime = observation_measurement_datetime.replace( second = 0, microsecond = 0)
+            #Time when observer enters data
+            observation_entry_datetime = init_datetime - datetime.timedelta(days = day)
+            #Remove seconds
+            observation_entry_datetime = observation_entry_datetime.replace(second = 0)
+            Measurement.objects.create(
+                level = 100,
+                air_temperature = 10,
+                observation_datetime = observation_measurement_datetime,
+                entry_datetime = observation_entry_datetime,
+                observation = first_hydropost_observation,
+            )

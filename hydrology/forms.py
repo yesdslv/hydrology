@@ -6,10 +6,10 @@ from datetime import datetime
 from .weather_and_condition_types import PRECIPITATION_TYPES, WIND_DIRECTION_TYPES, WIND_POWER_TYPES 
 from .weather_and_condition_types import CONDITION_TYPES, PILE_NUMBERS
 
-from .models import Level
-#Minimum forms for observation
-class BasicObservationForm(forms.Form):
-    level = forms.IntegerField(widget = forms.NumberInput(attrs =
+
+#All forms for observation
+class MeasurementForm(forms.Form):
+    level = forms.DecimalField(widget = forms.NumberInput(attrs =
         {
             'class': 'form-control',
             'placeholder': 'Уровень воды(см)',
@@ -55,7 +55,6 @@ class BasicObservationForm(forms.Form):
         ]
     , required = False, label = False)
 
-class AirTemperatureForm(forms.Form):
     air_temperature = forms.DecimalField(widget = forms.NumberInput(attrs = 
         {
             'class': 'form-control',
@@ -68,7 +67,6 @@ class AirTemperatureForm(forms.Form):
         ]
     , required = False, label = False)
     
-class RippleForm(forms.Form):
     ripple = forms.IntegerField(widget = forms.NumberInput(attrs = 
         {
             'class': 'form-control',
@@ -76,15 +74,6 @@ class RippleForm(forms.Form):
         }
     ), required = False, label = False)
 
-class DischargeForm(forms.Form):
-    discharge = forms.DecimalField(widget = forms.NumberInput(attrs = 
-        {
-            'class': 'form-control',
-            'placeholder': 'Расход воды',
-        }
-    ), required = False, label = False)
-
-class PrecipitationForm(forms.Form):
     precipitation = forms.DecimalField(widget = forms.NumberInput(attrs = 
         {
             'class': 'form-control',
@@ -107,19 +96,6 @@ class PrecipitationForm(forms.Form):
         }
     ), choices = PRECIPITATION_TYPES, required = False, label = False)
 
-    def clean(self):
-         cleaned_data = super().clean()
-         precipitation = cleaned_data.get('precipitation', False)
-         precipitation_type = cleaned_data.get('precipitation_type', False)
-   
-         #Checks if precipitation field is empty and precipitation_type field is not empty
-         if precipitation is None and precipitation_type:
-             raise forms.ValidationError('Заполните все поля осадков')
-         #Checks if precipitation field is not empty and precipitation_type field is empty
-         if precipitation is not None and not precipitation_type:
-             raise forms.ValidationError('Заполните все поля осадков')
-
-class WindForm(forms.Form):
     wind_direction = forms.MultipleChoiceField(widget = forms.SelectMultiple(attrs=
         {
             'class': 'selectpicker',
@@ -129,6 +105,7 @@ class WindForm(forms.Form):
             'data-width': '100%',
         }
     ), choices = WIND_DIRECTION_TYPES, required = False, label = False)
+    
     wind_power = forms.MultipleChoiceField(widget = forms.SelectMultiple(attrs=
         {
             'class': 'selectpicker',
@@ -139,9 +116,8 @@ class WindForm(forms.Form):
         }
     ), choices = WIND_POWER_TYPES, required = False, label = False)
 
-class ConditionForm(forms.Form):
     #2 water object conditions can be sumbitted
-    condition = forms.MultipleChoiceField(widget = forms.SelectMultiple(attrs=
+    water_object_condition = forms.MultipleChoiceField(widget = forms.SelectMultiple(attrs=
         {
             'class': 'selectpicker',
             'data-none-selected-text': 'Состояние водного объекта',
@@ -155,6 +131,58 @@ class ConditionForm(forms.Form):
             }
     ), choices = CONDITION_TYPES, required = False, label = False)
 
+    def clean(self):
+         cleaned_data = super().clean()
+         precipitation = cleaned_data.get('precipitation', False)
+         precipitation_type = cleaned_data.get('precipitation_type', False)
+   
+         #Checks if precipitation field is empty and precipitation_type field is not empty
+         if precipitation is None and precipitation_type:
+             raise forms.ValidationError('Заполните все поля осадков')
+         #Checks if precipitation field is not empty and precipitation_type field is empty
+         if precipitation is not None and not precipitation_type:
+             raise forms.ValidationError('Заполните все поля осадков')
+    
+    def clean_water_object_condition(self):
+        water_object_condition = self.cleaned_data['water_object_condition']
+        if len(water_object_condition) > 0 and len(water_object_condition) < 3:
+            water_object_condition = ';'.join(water_object_condition)
+        else:
+            water_object_condition = None
+        return water_object_condition
+
+    #Convert list to string
+    def clean_wind_power(self):
+        wind_power = self.cleaned_data['wind_power']
+        if len(wind_power) == 1:
+            wind_power = ''.join(wind_power)
+        else:
+            wind_power = None
+        return wind_power
+
+    def clean_wind_direction(self):
+        wind_direction = self.cleaned_data['wind_direction']
+        if len(wind_direction) == 1:
+            wind_direction = ''.join(wind_direction)
+        else:
+            wind_direction = None
+        return wind_direction
+
+    def clean_pile(self):
+        pile = self.cleaned_data['pile']
+        if len(pile) == 1:
+            pile = ''.join(pile)
+        else:
+            pile = None
+        return pile
+
+    def clean_precipitation_type(self):
+        precipitation_type = self.cleaned_data['precipitation_type']
+        if len(precipitation_type) == 1:
+            precipitation_type = ''.join(precipitation_type)
+        else:
+            precipitation_type = None
+        return precipitation_type
 
 ##Abbreviations for hydropost categories
 ##RHP - River HydroPost(Речной пост)
@@ -162,29 +190,41 @@ class ConditionForm(forms.Form):
 ##SHP - Sea HydroPost(Морской пост)
 
 #Form for Hydropost category RHP1(Речной пост 1 разряд)
-class RHP1Form(ConditionForm, WindForm, PrecipitationForm, AirTemperatureForm, BasicObservationForm):
-    pass
-    
+class RHP1Form(MeasurementForm):
+    class Meta:
+        exclude = ('ripple',)
+
 #Form for Hydropost category RHP2(Речной пост 2 разряд)
-class RHP2Form(ConditionForm, WindForm, PrecipitationForm, AirTemperatureForm, BasicObservationForm):
-    pass
+class RHP2Form(MeasurementForm):
+    class Meta:
+        exclude = ('ripple',)
 
 #Form for Hydropost category RHP3(Речной пост 3 разряд)
-class RHP3Form(ConditionForm, WindForm, AirTemperatureForm, BasicObservationForm):
-    pass
+class RHP3Form(MeasurementForm):
+    class Meta:
+        exclude = ('ripple', 'precipitation', 'precipitation_type',)
 
 #Form for Hydropost category LHP1(Озерный пост 1 разряд)
-class LHP1Form(ConditionForm, WindForm, PrecipitationForm, RippleForm, AirTemperatureForm, BasicObservationForm):
-    pass
+class LHP1Form(MeasurementForm):
+    class Meta:
+        exclude = ()
 
 #Form for Hydropost category LHP2(Озерный пост 2 разряд)
-class LHP2Form(ConditionForm, WindForm, PrecipitationForm, RippleForm, AirTemperatureForm, BasicObservationForm):
-    pass
+class LHP2Form(MeasurementForm):
+    class Meta:
+        exclude = ()
 
 #Form for Hydropost category SHP1(Морской пост 1 разряд)
-class SHP1Form(ConditionForm, WindForm, PrecipitationForm, RippleForm, AirTemperatureForm, BasicObservationForm):
-    pass
+class SHP1Form(MeasurementForm):
+    class Meta:
+        exclude = ()
 
 #Form for Hydropost category SHP2(Морской пост 2 разряд)
-class SHP2Form(ConditionForm, WindForm, PrecipitationForm, RippleForm, AirTemperatureForm, BasicObservationForm):
-    pass
+class SHP2Form(MeasurementForm):
+    class Meta:
+        exclude = ()
+
+
+class StartEndDateTimeForm(forms.Form):
+    start_datetime = forms.DateTimeField()
+    end_datetime = forms.DateTimeField()

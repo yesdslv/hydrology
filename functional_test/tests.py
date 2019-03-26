@@ -1,5 +1,6 @@
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+from django.core.management import call_command
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -20,9 +21,14 @@ class VisitorLoginTest(StaticLiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox()
         self.browser.implicitly_wait(3)
-        ##Create user Didar and make him hydrologist
-        new_user = User.objects.create_user(username = 'Didar', password = 'password')
-        new_hydrologist = Hydrologist.objects.create(user = new_user)  
+        ##Create user Baurzhan
+        new_user = User.objects.create_user(username = 'Baurzhan', password = 'password')
+        ##Make Baurzhan observer
+        new_hydrologist_observer = Hydrologist.objects.create(
+                user = new_user,
+                occupation = Hydrologist.OBSERVER
+        )  
+        ##Assign to Baurzhan hydroposts
         ##Р. Силеты – Новомарковка
         ##Тип ГП-1
         firstHydropost = Hydropost.objects.get(code = 11242)
@@ -44,21 +50,32 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         ##Каспийское море – п.Каламкас
         ##Тип МГП-2
         seventhHydropost = Hydropost.objects.get(code = 97057)
-        ##Didar will enter data for these hydroposts
+        ##Baurzhan will enter data for these hydroposts
         Observation.objects.create(hydropost = firstHydropost,
-                            hydrologist = new_hydrologist)
+                            hydrologist = new_hydrologist_observer)
         Observation.objects.create(hydropost = secondHydropost,
-                            hydrologist = new_hydrologist)
+                            hydrologist = new_hydrologist_observer)
         Observation.objects.create(hydropost = thirdHydropost,
-                            hydrologist = new_hydrologist)
+                            hydrologist = new_hydrologist_observer)
         Observation.objects.create(hydropost = fourthHydropost,
-                            hydrologist = new_hydrologist)
+                            hydrologist = new_hydrologist_observer)
         Observation.objects.create(hydropost = fifthHydropost,
-                            hydrologist = new_hydrologist)
+                            hydrologist = new_hydrologist_observer)
         Observation.objects.create(hydropost = sixthHydropost,
-                            hydrologist = new_hydrologist)
+                            hydrologist = new_hydrologist_observer)
         Observation.objects.create(hydropost = seventhHydropost,
-                            hydrologist = new_hydrologist)
+                            hydrologist = new_hydrologist_observer)
+        ##Create user Didar
+        new_user = User.objects.create_user(username = 'Didar', password = 'password')
+        ##Make Didar engineer
+        new_hydrologist_engineer = Hydrologist.objects.create(
+                user = new_user,
+                occupation = Hydrologist.ENGINEER
+        )  
+        ##Create user Yesset
+        new_user = User.objects.create_user(username = 'Yesset', password = 'password')
+        ##Do not assign Yesset to groups
+        new_hydrologist = Hydrologist.objects.create(user = new_user)
 
     def tearDown(self):
         self.browser.quit()
@@ -203,8 +220,7 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         success_alert = self.browser.find_element_by_css_selector('div.alert.alert-success')
 
 
-
-    def test_hydrologist_can_login_have_access_only_to_his_stations_and_submit_data(self):
+    def test_hydrologist_observer_can_login_have_access_only_to_his_stations_and_submit_data(self):
         #Hydrologist enter to hydrological web-site
         self.browser.get(self.live_server_url)
         #Hydrologist should be sure that he visits hydrological web-site
@@ -213,7 +229,7 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         #Hydrologist enter wrong password
         username = self.browser.find_element_by_name('username')
         password = self.browser.find_element_by_name('password')
-        username.send_keys('Didar')
+        username.send_keys('Baurzhan')
         password.send_keys('123456')
         loginButton = self.browser.find_element_by_name('login')
         loginButton.click()
@@ -227,21 +243,21 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         password = self.browser.find_element_by_name('password')
         username.clear()
         password.clear()
-        username.send_keys('Didar')
+        username.send_keys('Baurzhan')
         password.send_keys('password')
         loginButton = self.browser.find_element_by_name('login')
         loginButton.click()
         #Hydrologist figure out that he succesfully logged in
         #His link has been changed
-        self.assertRegex(self.browser.current_url, '/')
+        self.assertRegex(self.browser.current_url, '/observation')
         #Hydrologist see his user name
         username = self.browser.find_element_by_tag_name('h1')
-        self.assertEqual('Наблюдатель: Didar', username.text)
+        self.assertEqual('Наблюдатель: Baurzhan', username.text)
         
         
         #Hydrologist decide to enter observation data
         ##Test Validation error messages, hydrologist sumbits incorrect data 
-        self.sumbitWrongObservationData('Р. Силеты – Новомарковка', 'Речной пост 1 разряд')
+        #self.sumbitWrongObservationData('Р. Силеты – Новомарковка', 'Речной пост 1 разряд')
         
         
         
@@ -282,4 +298,57 @@ class VisitorLoginTest(StaticLiveServerTestCase):
         ##He choose Каспийское море – п.Каламкас
         self.submitObservationData('Каспийское море – п.Каламкас', 'Морской пост 2 разряд')
         self.browser.implicitly_wait(1)
+        self.fail('Finish Test')
+
+    def test_hydrologist_observer_and_hydrologist_engineer_can_access_to_their_pages(self):
+        #Hydrologist observer enters url for data observation
+        self.browser.get(self.live_server_url)
+        #Hydrologist observer should be sure that he visits hydrological web-site
+        self.assertEqual('Департамент гидрологии', self.browser.title)
+        self.assertRegex(self.browser.current_url, '/login')
+        #Hydrologist observer enter wrong password
+        username = self.browser.find_element_by_name('username')
+        password = self.browser.find_element_by_name('password')
+        username.send_keys('Baurzhan')
+        password.send_keys('123456')
+        login_button = self.browser.find_element_by_name('login')
+        login_button.click()
+        #Browser stays on home page with login form
+        self.assertRegex(self.browser.current_url, '/login')
+        #Page contains error message
+        error_message = self.browser.find_element_by_class_name('alert')
+        self.assertEqual('Неправильный логин или пароль', error_message.text)
+        #Hydrologist observer enter correct password
+        username = self.browser.find_element_by_name('username')
+        password = self.browser.find_element_by_name('password')
+        username.clear()
+        password.clear()
+        username.send_keys('Baurzhan')
+        password.send_keys('password')
+        login_button = self.browser.find_element_by_name('login')
+        login_button.click()
+        #Hydrologist observer figure out that he succesfully logged in
+        #His link has been changed
+        self.assertRegex(self.browser.current_url, '/observation')
+        #Hydrologist observer see his user name
+        username = self.browser.find_element_by_tag_name('h1')
+        self.assertEqual('Наблюдатель: Baurzhan', username.text)
+        #Hydrologist observer logout
+        logout_button = self.browser.find_element_by_css_selector('.jumbotron > .container > a')
+        logout_button.click()
+        #Hydrologist observer should see login page
+        self.assertRegex(self.browser.current_url, '/login')
+        time.sleep(3)
+        #Hydrologist engineer enter correct password
+        username = self.browser.find_element_by_name('username')
+        password = self.browser.find_element_by_name('password')
+        username.send_keys('Didar')
+        password.send_keys('password')
+        login_button = self.browser.find_element_by_name('login')
+        login_button.click()
+        #Hydrologist engineer figure out that he succesfully logged in
+        #His link has been changed
+        self.assertRegex(self.browser.current_url, '/data')
+        #Hydrologist observer see his user name
+        #username = self.browser.find_element_by_tag_name('h1')
         self.fail('Finish Test')
