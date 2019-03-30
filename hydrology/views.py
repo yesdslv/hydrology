@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.db.models import Q
 from django.db import IntegrityError
 
 from datetime import datetime, timedelta
+
 from collections import OrderedDict
-import json
 
 from .models import Hydrologist, Hydropost, Observation, Measurement
 from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form, StartEndDateTimeForm
