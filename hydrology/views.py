@@ -143,9 +143,6 @@ def search_hydropost_category(request):
 def data(request):
     if request.method == 'POST' and request.is_ajax():
         form = StartEndDateTimeForm(request.POST)
-        #for key in request.POST:
-        #    print('Key is ' + str(key))
-        #    print('Value is ' + str(request.POST.get(key, False)))
         start_datetime = request.POST.get('start_datetime', False)
         end_datetime = request.POST.get('end_datetime', False)
         #Used in pagination(limit the query(start,length)), 

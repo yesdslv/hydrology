@@ -13,6 +13,8 @@ from .models import Hydropost
 
 from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form
 
+import json
+
 class LoginViewTest(TestCase):
    
     def test_login_page_resolves_as_login_view(self):
@@ -441,10 +443,18 @@ class DataViewTest(LoggedInTestCase):
         #Start_datetime should be less than observation_measurement_datetime - 5 days in logged_in
         #End_datetime should be greater than observation_measurement_datetime in logged_in
         self.client.login(username='engineer', password='password')
+        #Datatable POST some additional data, table view use:
+        #Start, length, order[0]column, order[0][dir], search[value], draw
         response = self.client.post(reverse('data'),
             data = { 
                 'start_datetime' : '2019-01-01 00:00',
                 'end_datetime' : '2019-03-20 00:00',
+                'start' : 0,
+                'length' : 5,
+                'order[0][column]' : 2,
+                'order[0][dir]' : 'asc',
+                'search[value]' : '',
+                'draw' : 0
             },
             HTTP_X_REQUESTED_WITH='XMLHttpRequest')
          
@@ -463,59 +473,91 @@ class DataViewTest(LoggedInTestCase):
             observation_datetimes.append(observation_measurement_datetime)
             entry_datetimes.append(observation_entry_datetime)
  
-        json_expected_result = {
+        expected_result = {
+            'recordsTotal' : 5,
+            'recordsFiltered' : 5,
+            'draw' : 0,
             'data' : [
                 {
                     'hydropost_name' : 'Р. Силеты – Новомарковка',
                     'hydropost_code' : 11242,
                     'region' : 'Акмолинская область',
-                    'observer' : 'observer',
-                    'observation_datetime1' : observation_datetimes[0],
-                    'entry_datetime' : entry_datetimes[0],
+                    'observer' : 'Наблюдатель Наблюдаев',
+                    'observation_datetime' : observation_datetimes[0].strftime('%Y-%m-%dT%H:%M:%S'),
+                    'entry_datetime' : entry_datetimes[0].strftime('%Y-%m-%dT%H:%M:%S'),
                     'level' : 100,
-                    'air_temperature' : 10
+                    'water_temperature' : None,
+                    'air_temperature' : 10,
+                    'precipitation' : None,
+                    'precipitation_type' : None,
+                    'wind_direction' : None,
+                    'wind_power' : None,
                 },
                 {
                     'hydropost_name' : 'Р. Силеты – Новомарковка',
                     'hydropost_code' : 11242,
                     'region' : 'Акмолинская область',
-                    'observer' : 'observer',
-                    'observation_datetime1' : observation_datetimes[1],
-                    'entry_datetime' : entry_datetimes[1],
+                    'observer' : 'Наблюдатель Наблюдаев',
+                    'observation_datetime' : observation_datetimes[1].strftime('%Y-%m-%dT%H:%M:%S'),
+                    'entry_datetime' : entry_datetimes[1].strftime('%Y-%m-%dT%H:%M:%S'),
                     'level' : 100,
-                    'air_temperature' : 10
+                    'water_temperature' : None,
+                    'air_temperature' : 10,
+                    'precipitation' : None,
+                    'precipitation_type' : None,
+                    'wind_direction' : None,
+                    'wind_power' : None,
                 },
                 {
                     'hydropost_name' : 'Р. Силеты – Новомарковка',
                     'hydropost_code' : 11242,
                     'region' : 'Акмолинская область',
-                    'observer' : 'observer',
-                    'observation_datetime1' : observation_datetimes[2],
-                    'entry_datetime' : entry_datetimes[2],
+                    'observer' : 'Наблюдатель Наблюдаев',
+                    'observation_datetime' : observation_datetimes[2].strftime('%Y-%m-%dT%H:%M:%S'),
+                    'entry_datetime' : entry_datetimes[2].strftime('%Y-%m-%dT%H:%M:%S'),
                     'level' : 100,
-                    'air_temperature' : 10
+                    'water_temperature' : None,
+                    'air_temperature' : 10,
+                    'precipitation' : None,
+                    'precipitation_type' : None,
+                    'wind_direction' : None,
+                    'wind_power' : None,
                 },
                 {
                     'hydropost_name' : 'Р. Силеты – Новомарковка',
                     'hydropost_code' : 11242,
                     'region' : 'Акмолинская область',
-                    'observer' : 'observer',
-                    'observation_datetime1' : observation_datetimes[3],
-                    'entry_datetime' : entry_datetimes[3],
+                    'observer' : 'Наблюдатель Наблюдаев',
+                    'observation_datetime' : observation_datetimes[3].strftime('%Y-%m-%dT%H:%M:%S'),
+                    'entry_datetime' : entry_datetimes[3].strftime('%Y-%m-%dT%H:%M:%S'),
                     'level' : 100,
-                    'air_temperature' : 10
+                    'water_temperature' : None,
+                    'air_temperature' : 10,
+                    'precipitation' : None,
+                    'precipitation_type' : None,
+                    'wind_direction' : None,
+                    'wind_power' : None,
                 },
                 {
                     'hydropost_name' : 'Р. Силеты – Новомарковка',
                     'hydropost_code' : 11242,
                     'region' : 'Акмолинская область',
-                    'observer' : 'observer',
-                    'observation_datetime1' : observation_datetimes[4],
-                    'entry_datetime' : entry_datetimes[4],
+                    'observer' : 'Наблюдатель Наблюдаев',
+                    'observation_datetime' : observation_datetimes[4].strftime('%Y-%m-%dT%H:%M:%S'),
+                    'entry_datetime' : entry_datetimes[4].strftime('%Y-%m-%dT%H:%M:%S'),
                     'level' : 100,
-                    'air_temperature' : 10
+                    'water_temperature' : None,
+                    'air_temperature' : 10,
+                    'precipitation' : None,
+                    'precipitation_type' : None,
+                    'wind_direction' : None,
+                    'wind_power' : None,
                 }
             ]
         }
+        print(type(expected_result))
+        print(expected_result['data'])
+        expected_result = json.dumps(expected_result)
+        json_expected_result = json.loads(expected_result)
         self.maxDiff = None
         self.assertJSONEqual(force_text(response.content), json_expected_result)

@@ -18,7 +18,8 @@ class LoggedInTestCase(TestCase):
     
     def setUp(self):
         #Create user
-        new_user = User.objects.create_user(username='observer', password='password')
+        new_user = User.objects.create_user(username='observer', password='password', 
+                first_name = 'Наблюдатель', last_name = 'Наблюдаев')
         #Assign user to observers
         new_hydrologist = Hydrologist.objects.create(
                 user = new_user,
