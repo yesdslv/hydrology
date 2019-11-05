@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+
+# Database
+  cyb-postgres:
+    image: "postgres"
+    container_name: "hydrology-postgres"
+    env_file: .env
+    volumes:
+      - /docker_volumes/local_dev/hydrology/pgdata:/var/lib/postgresql/data
+    ports:
+      - "2424:5432"
