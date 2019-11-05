@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Env file path
-env_file_path = Path(__file__).absolute().parents[1].joinpath('deploy/.env')
+env_file_path = Path(__file__).absolute().parents[2].joinpath('deploy/.env')
 load_dotenv(env_file_path, verbose=True)
 
 
