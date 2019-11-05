@@ -12,8 +12,15 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
+from pathlib import Path
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Env file path
+env_file_path = Path(__file__).absolute().parents[1].joinpath('deploy/.env')
+load_dotenv(env_file_path, verbose=True)
 
 
 # Quick-start development settings - unsuitable for production
@@ -75,13 +82,16 @@ WSGI_APPLICATION = 'hydrotdd.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 
-DATABASES = { 
+# Postgres -----------------------------------------
+DATABASES = {  # TODO: OPTIMIZATION: CONN_MAX_AGE
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': '/home/yes/django/hydrotdd/hydrotdd/my.cnf',
-        },  
-    }     
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ['POSTGRES_DB'],
+        'USER': os.environ['POSTGRES_USER'],
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+        'HOST': os.environ['POSTGRES_HOST'],
+        'PORT': os.environ['POSTGRES_PORT'],
+    }
 }
 
 
