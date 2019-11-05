@@ -23,4 +23,5 @@ urlpatterns = [
     path('login/', LoginView.as_view(template_name='hydrology/login.html'), name='login'),
     path('logout/', LogoutView.as_view(template_name='hydrology/logged_out.html'), name='logout'),
     path('', include('hydrology.urls')),
+    path('meteorology', include('meteorology.urls')),
 ]
