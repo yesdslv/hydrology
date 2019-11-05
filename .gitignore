@@ -2,5 +2,6 @@ db.sqlite3
 __pycache__
 *.pyc
 geckodriver.log
-hydrotdd/my.cnf
 htmlcov
+.idea
+venv
