@@ -3,7 +3,7 @@ from django.urls import resolve, reverse
 from django.utils.encoding import force_text
 from django.utils import timezone
 
-from .views import observation, search_hydropost_category, record, home, data
+from hydrology.views import observation, search_hydropost_category, record, home, data
 
 from datetime import datetime, timedelta
 
