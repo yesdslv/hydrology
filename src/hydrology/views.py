@@ -1,16 +1,17 @@
+from datetime import datetime, timedelta
+from collections import OrderedDict
+
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
 from django.db import IntegrityError
+from rest_framework import viewsets
 
-from datetime import datetime, timedelta
-
-from collections import OrderedDict
-
-from .models import Hydrologist, Hydropost, Observation, Measurement
-from .forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form, StartEndDateTimeForm
-from .decorators import observer_required, engineer_required
+from hydrology.models import Hydrologist, Hydropost, Observation, Measurement
+from hydrology.forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form, StartEndDateTimeForm
+from hydrology.decorators import observer_required, engineer_required
+from hydrology.serializers import HydropostSerializer
 
 
 # This list is used by record view to get required form
@@ -214,3 +215,11 @@ def data(request):
         form = StartEndDateTimeForm()
     context = {'form': form, }
     return render(request, 'hydrology/data.html', context)
+
+
+class HydropostViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    `list` and `detail` actions for hydroposts
+    """
+    queryset = Hydropost.objects.all()
+    serializer_class = HydropostSerializer

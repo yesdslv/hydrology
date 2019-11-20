@@ -12,3 +12,6 @@ urlpatterns = [
     path('data/', views.data, name='data'),
     path('', views.home, name='home'),
 ]
+
+router = DefaultRouter()
+router.register(r'')
