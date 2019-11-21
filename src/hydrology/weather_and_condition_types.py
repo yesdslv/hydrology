@@ -1,4 +1,4 @@
-#Pile number
+# Pile number
 FIRST = 1
 SECOND = 2
 THIRD = 3
@@ -23,7 +23,7 @@ PILE_NUMBERS = (
 )
 
 
-#Precipitation  types
+# Precipitation  types
 SOFT = 'жидкие'
 SOLID = 'твердые'
 MIXED = 'смешанные'
@@ -33,7 +33,7 @@ PRECIPITATION_TYPES = (
     (MIXED, 'Смешанные осадки'),
 )
 
-#Wind direction types
+# Wind direction types
 CALM = 'штиль'
 ON_FLOW = 'по течению'
 AGAINST_FLOW = 'против течения'
@@ -47,7 +47,7 @@ WIND_DIRECTION_TYPES = (
     (FROM_RIGHT_COAST, 'с правого берега'),
 )
 
-#Wind power types
+# Wind power types
 WEAK = 'слабый'
 MODERATE = 'умеренный'
 HEAVY = 'сильный'
@@ -58,7 +58,7 @@ WIND_POWER_TYPES = (
     (HEAVY, 'сильный'),
 )
 
-#Condition types
+# Condition types
 CONDITION_TYPES = (
     ('Сало', 'Сало'),
     ('Снежура', 'Снежура'),

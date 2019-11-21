@@ -217,7 +217,7 @@ def data(request):
     return render(request, 'hydrology/data.html', context)
 
 
-class HydropostViewSet(viewsets.ReadOnlyModelViewSet):
+class HydropostViewSet(viewsets.ModelViewSet):
     """
     `list` and `detail` actions for hydroposts
     """

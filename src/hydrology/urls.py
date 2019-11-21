@@ -3,7 +3,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
-from . import views
+from hydrology import views
+from hydrology.views import HydropostViewSet
 
 urlpatterns = [
     path('observation/', views.observation, name='observation'),
@@ -13,5 +14,7 @@ urlpatterns = [
     path('', views.home, name='home'),
 ]
 
-router = DefaultRouter()
-router.register(r'')
+router = DefaultRouter(trailing_slash=False)
+router.register(r'hydroposts', HydropostViewSet)
+
+urlpatterns = urlpatterns + router.urls
