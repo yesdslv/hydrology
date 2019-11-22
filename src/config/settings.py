@@ -19,7 +19,7 @@ from dotenv import load_dotenv
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Env file path
-env_file_path = Path(__file__).absolute().parents[2].joinpath('deploy/.env')
+env_file_path = Path(__file__).absolute().parents[2].joinpath('deploy_hydro/.env')
 load_dotenv(env_file_path, verbose=True)
 
 
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'hydrology',
 ]
 
@@ -132,3 +133,7 @@ USE_L10N = True
 
 
 STATIC_URL = '/static/'
+
+# Media
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

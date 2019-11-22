@@ -3,7 +3,7 @@ version: '3'
 services:
 
 # Database
-  cyb-postgres:
+  hydro-postgres:
     image: "postgres"
     container_name: "hydrology-postgres"
     env_file: .env

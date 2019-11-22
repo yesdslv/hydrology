@@ -12,6 +12,7 @@ urlpatterns = [
     path('record/', views.record, name='record'),
     path('data/', views.data, name='data'),
     path('', views.home, name='home'),
+    path('upload_weather_image', views.WeatherImageUploadView.as_view(), name='weather_image_upload')
 ]
 
 router = DefaultRouter(trailing_slash=False)

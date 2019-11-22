@@ -6,12 +6,14 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Q
 from django.db import IntegrityError
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from hydrology.models import Hydrologist, Hydropost, Observation, Measurement
 from hydrology.forms import RHP1Form, RHP2Form, RHP3Form, LHP1Form, LHP2Form, SHP1Form, SHP2Form, StartEndDateTimeForm
 from hydrology.decorators import observer_required, engineer_required
-from hydrology.serializers import HydropostSerializer
+from hydrology.serializers import HydropostSerializer, WeatherImageSerializer
 
 
 # This list is used by record view to get required form
@@ -223,3 +225,15 @@ class HydropostViewSet(viewsets.ModelViewSet):
     """
     queryset = Hydropost.objects.all()
     serializer_class = HydropostSerializer
+
+
+class WeatherImageUploadView(viewsets.ModelViewSet):
+    parser_class = ('FileUploadParser',)
+
+    def post(self, request, *args, **kwargs):
+        image_serializer = WeatherImageSerializer(data=request.data)
+        if image_serializer.is_valid():
+            image_serializer.save()
+            return Response(image_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(image_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 
 from .weather_and_condition_types import PRECIPITATION_TYPES, WIND_POWER_TYPES, WIND_DIRECTION_TYPES, CONDITION_TYPES
 
@@ -122,3 +124,37 @@ class Discharge(models.Model):
 
     class Meta:
         db_table = 'discharge'
+
+
+class Photoshot(models.Model):
+    image = models.ImageField(upload_to='pics/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+
+class Rain(models.Model):
+    precipitation = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    picture = GenericRelation(Photoshot)
+
+    class Meta:
+        db_table = 'rain'
+
+
+class Snow(models.Model):
+    snow = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
+    picture = GenericRelation(Photoshot)
+
+    class Meta:
+        db_table = 'snow'
+
+
+class WeatherImage(models.Model):
+    image = models.ImageField(upload_to='weather/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+
+
+
+
